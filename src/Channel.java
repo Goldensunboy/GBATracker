@@ -13,10 +13,14 @@ public class Channel {
 	public Clip lastClip;
 	public Clip currClip;
 	
+	/** Whether or not sweeping is allowed on this channel */
+	public boolean hasSweep;
+	
 	/**
 	 * Construct a new Channel object
 	 */
-	public Channel() {
+	public Channel(boolean hasSweep) {
+		this.hasSweep = hasSweep;
 		try {
 			currClip = AudioSystem.getClip();
 		} catch (LineUnavailableException e) {

@@ -123,6 +123,24 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 			}
 		});
 		panel4.add(zoomOutButton);
+		JButton moveLeftButton = new JButton("<");
+		moveLeftButton.addMouseListener(new MessageMouseListener(controller, "Move left"));
+		moveLeftButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				controller.moveLeft();
+			}
+		});
+		panel4.add(moveLeftButton);
+		JButton moveRightButton = new JButton(">");
+		moveRightButton.addMouseListener(new MessageMouseListener(controller, "Move right"));
+		moveRightButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				controller.moveRight();
+			}
+		});
+		panel4.add(moveRightButton);
 		editorPropertiesPanel.add(panel4);
 		
 		// Clean up

@@ -63,6 +63,7 @@ public class GBATrackerFrame extends JFrame {
 	 * Zoom in, on the editor
 	 */
 	public double zoomIn() {
+		// TODO
 		return 0;
 	}
 	
@@ -70,7 +71,22 @@ public class GBATrackerFrame extends JFrame {
 	 * Zoom out, on the editor
 	 */
 	public double zoomOut() {
+		// TODO
 		return 0;
+	}
+	
+	/**
+	 * Scroll left in the editor
+	 */
+	public void moveLeft() {
+		// TODO
+	}
+	
+	/**
+	 * Scroll right in the editor
+	 */
+	public void moveRight() {
+		// TODO
 	}
 	
 	/**
