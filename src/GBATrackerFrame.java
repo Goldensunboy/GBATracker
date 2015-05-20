@@ -63,30 +63,28 @@ public class GBATrackerFrame extends JFrame {
 	 * Zoom in, on the editor
 	 */
 	public double zoomIn() {
-		// TODO
-		return 0;
+		return simulationPanel.zoomIn();
 	}
 	
 	/**
 	 * Zoom out, on the editor
 	 */
 	public double zoomOut() {
-		// TODO
-		return 0;
+		return simulationPanel.zoomOut();
 	}
 	
 	/**
 	 * Scroll left in the editor
 	 */
-	public void moveLeft() {
-		// TODO
+	public double moveLeft() {
+		return simulationPanel.moveLeft();
 	}
 	
 	/**
 	 * Scroll right in the editor
 	 */
-	public void moveRight() {
-		// TODO
+	public double moveRight() {
+		return simulationPanel.moveRight();
 	}
 	
 	/**
@@ -95,6 +93,39 @@ public class GBATrackerFrame extends JFrame {
 	 */
 	public void setTooltipText(String text) {
 		tooltipLabel.setText(text);
+	}
+	
+	/**
+	 * Set a new quantization level for the editor
+	 * @param quantization The new quantization
+	 */
+	public void setQuantization(int quantization) {
+		simulationPanel.setQuantization(quantization);
+	}
+	
+	/**
+	 * Retrieve a Note object from the UI
+	 * @param isSqaure Whether this is from a square or noise channel
+	 * @return The Note
+	 */
+	public Note getNoteFromUI(boolean isSqaure) {
+		return noteEditorPanel.getNoteFromUI(isSqaure);
+	}
+	
+	/**
+	 * Update the editor panel with information from a Note
+	 * @param note
+	 */
+	public void updateUIFromNote(Note note) {
+		noteEditorPanel.updateUIFromNote(note);
+	}
+	
+	/**
+	 * Update the currently selected note in real time
+	 * @param note The Note data providing the update
+	 */
+	public void updateSelectedNote(Note note) {
+		simulationPanel.updateSelectedNote(note);
 	}
 	
 	/**

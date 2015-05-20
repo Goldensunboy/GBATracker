@@ -265,7 +265,7 @@ public class Note {
 		if(isSquareType) {
 			return FRQ | (2048 - (NoteFrequencies[musicalNote] >> octave));
 		} else {
-			return FRQ | ((int) dividingRatio) | ((counterStepIs15Bits ? 1 : 0) << 3) | (shiftClockFrequency << 4);
+			return FRQ | ((int) dividingRatio) | ((counterStepIs15Bits ? 0 : 1) << 3) | (shiftClockFrequency << 4);
 		}
 	}
 	

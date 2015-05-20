@@ -40,7 +40,8 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 	private JLabel cutoffLabel;
 	private JComboBox<Integer> envelopeComboBox;
 	private JCheckBox increasingEnvelopeCheckBox;
-	private JRadioButton counterWidth15Bits;
+	private JRadioButton counterWidth15BitsButton;
+	private JRadioButton counterWidth7BitsButton;
 	
 	/**
 	 * Create the UI for the noise channel modifiers
@@ -54,12 +55,21 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
                 BorderFactory.createTitledBorder("Noise Channel"),
                 BorderFactory.createEmptyBorder(5,5,5,5)));
 		
+		// ActionListener for updating the selected note
+		ActionListener updateSelectedNoteListener = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				controller.updateSelectedNote(createNote());
+			}
+		};
+		
 		// Note pitch panel
 		JPanel frequencyPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		frequencyPanel.add(new JLabel("Ratio:"));
 		ratioComboBox = new JComboBox<>(DividingRatios);
 		ratioComboBox.setSelectedItem(new Integer(3));
 		ratioComboBox.addMouseListener(new MessageMouseListener(controller, "Frequency dividing ratio (r)"));
+		ratioComboBox.addActionListener(updateSelectedNoteListener);
 		frequencyPanel.add(ratioComboBox);
 		shiftFrequencySlider = new JSlider(0, 15);
 		shiftFrequencySlider.setValue(3);
@@ -69,6 +79,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 			@Override
 			public void stateChanged(ChangeEvent arg0) {
 				shiftFrequencyLabel.setText("" + shiftFrequencySlider.getValue());
+				controller.updateSelectedNote(createNote());
 			}
 		});
 		frequencyPanel.add(shiftFrequencySlider);
@@ -142,14 +153,14 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		JPanel counterWidthPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		counterWidthPanel.add(new JLabel("Rand:"));
 		ButtonGroup counterWidthGroup = new ButtonGroup();
-		counterWidth15Bits = new JRadioButton("15 bits", true);
-		counterWidth15Bits.addMouseListener(new MessageMouseListener(controller, "Randomization vector: 2^15"));
-		counterWidthGroup.add(counterWidth15Bits);
-		counterWidthPanel.add(counterWidth15Bits);
-		JRadioButton counterWidth7bits = new JRadioButton("7 bits", false);
-		counterWidth7bits.addMouseListener(new MessageMouseListener(controller, "Randomization vector: 2^7"));
-		counterWidthGroup.add(counterWidth7bits);
-		counterWidthPanel.add(counterWidth7bits);
+		counterWidth15BitsButton = new JRadioButton("15 bits", true);
+		counterWidth15BitsButton.addMouseListener(new MessageMouseListener(controller, "Randomization vector: 2^15"));
+		counterWidthGroup.add(counterWidth15BitsButton);
+		counterWidthPanel.add(counterWidth15BitsButton);
+		counterWidth7BitsButton = new JRadioButton("7 bits", false);
+		counterWidth7BitsButton.addMouseListener(new MessageMouseListener(controller, "Randomization vector: 2^7"));
+		counterWidthGroup.add(counterWidth7BitsButton);
+		counterWidthPanel.add(counterWidth7BitsButton);
 		add(counterWidthPanel);
 		add(Box.createVerticalStrut(35));
 		
@@ -170,6 +181,34 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 	}
 	
 	/**
+	 * Update the UI from a Note object's properties
+	 * @param note The Note object
+	 */
+	public void updateUIFromNote(Note note) {
+		ratioComboBox.setSelectedIndex((int) note.dividingRatio);
+		shiftFrequencySlider.setValue(note.shiftClockFrequency);
+		shiftFrequencyLabel.setText("" + note.shiftClockFrequency);
+		volumeSlider.setValue(note.volume);
+		volumeLabel.setText("" + note.volume);
+		envelopeComboBox.setSelectedIndex(note.envelopeStep);
+		increasingEnvelopeCheckBox.setSelected(note.increasingEnvelope);
+		cutoffSlider.setValue(note.cutoffValue);
+		if(note.hasCutoff) {
+			cutoffCheckBox.setSelected(true);
+			cutoffSlider.setEnabled(true);
+		} else {
+			cutoffCheckBox.setSelected(false);
+			cutoffSlider.setEnabled(false);
+		}
+		cutoffLabel.setText(note.hasCutoff ? String.format("%d ms", ((64 - cutoffSlider.getValue()) * 1000) >> 8) : "");
+		if(note.counterStepIs15Bits) {
+			counterWidth15BitsButton.setSelected(true);
+		} else {
+			counterWidth7BitsButton.setSelected(true);
+		}
+	}
+	
+	/**
 	 * Generate a Note object from the selected options
 	 * @return The generated Note object
 	 */
@@ -183,7 +222,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		double r = ratioComboBox.getSelectedIndex();
 		note.dividingRatio = r == 0.0 ? 0.5 : r;
 		note.shiftClockFrequency = shiftFrequencySlider.getValue();
-		note.counterStepIs15Bits = counterWidth15Bits.isSelected();
+		note.counterStepIs15Bits = counterWidth15BitsButton.isSelected();
 		return note;
 	}
 }

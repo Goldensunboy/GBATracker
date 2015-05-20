@@ -20,7 +20,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	
 	/** Definitions */
 	private static final Integer[] Quantizations = {
-		8, 12, 16, 24, 32, 48
+		8, 12, 16, 24, 48
 	};
 	
 	/** Components used by the panel */
@@ -52,6 +52,31 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	 */
 	public int getQuantization() {
 		return (Integer) quantizationComboBox.getSelectedItem();
+	}
+	
+	/**
+	 * Get a Note object from the appropriate UI subgroup
+	 * @param isSquare Whether the note is for a square or noise channel
+	 * @return The Note object
+	 */
+	public Note getNoteFromUI(boolean isSquare) {
+		if(isSquare) {
+			return squareChannelPanel.createNote();
+		} else {
+			return noiseChannelPanel.createNote();
+		}
+	}
+	
+	/**
+	 * Update the UI components from data in a Note
+	 * @param note
+	 */
+	public void updateUIFromNote(Note note) {
+		if(note.isSquareType) {
+			squareChannelPanel.updateUIFromNote(note);
+		} else {
+			noiseChannelPanel.updateUIFromNote(note);
+		}
 	}
 	
 	/**
@@ -99,6 +124,12 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		quantizationComboBox = new JComboBox<>(Quantizations);
 		quantizationComboBox.setSelectedItem(new Integer(8));
 		quantizationComboBox.addMouseListener(new MessageMouseListener(controller, "Editor quantization"));
+		quantizationComboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				controller.setQuantization((Integer) quantizationComboBox.getSelectedItem());
+			}
+		});
 		panel3.add(quantizationComboBox);
 		editorPropertiesPanel.add(panel3);
 		
@@ -128,7 +159,8 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		moveLeftButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				controller.moveLeft();
+				double newPos = controller.moveLeft();
+				controller.setTooltipText(String.format("Measure: %.1f", newPos));
 			}
 		});
 		panel4.add(moveLeftButton);
@@ -137,7 +169,8 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		moveRightButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				controller.moveRight();
+				double newPos = controller.moveRight();
+				controller.setTooltipText(String.format("Measure: %.1f", newPos));
 			}
 		});
 		panel4.add(moveRightButton);

@@ -21,7 +21,7 @@ import javax.swing.event.ChangeListener;
 public class GBATrackerSquareChannelPanel extends JPanel {
 	
 	/** Definitions */
-	private static final String[] Notes = {
+	public static final String[] Notes = {
 		"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
 	};
 	private static final Integer[] Octaves = {
@@ -47,7 +47,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 	private JCheckBox increasingEnvelopeCheckBox;
 	private JComboBox<Integer> sweepRateComboBox;
 	private JComboBox<Integer> sweepStepComboBox;
-	private JCheckBox sweepDirectionCheckBox;
+	private JCheckBox increasingSweepCheckBox;
 	private JSlider volumeSlider;
 	private JLabel volumeLabel;
 	
@@ -63,19 +63,30 @@ public class GBATrackerSquareChannelPanel extends JPanel {
                 BorderFactory.createTitledBorder("Square Channels"),
                 BorderFactory.createEmptyBorder(5,5,5,5)));
 		
+		// ActionListener for updating the selected note
+		ActionListener updateSelectedNoteListener = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				controller.updateSelectedNote(createNote());
+			}
+		};
+		
 		// Note pitch panel
 		JPanel pitchPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		pitchPanel.add(new JLabel("Tone:"));
 		noteComboBox = new JComboBox<>(Notes);
 		noteComboBox.addMouseListener(new MessageMouseListener(controller, "The tone for a note"));
+		noteComboBox.addActionListener(updateSelectedNoteListener);
 		pitchPanel.add(noteComboBox);
 		octaveComboBox = new JComboBox<>(Octaves);
 		octaveComboBox.setSelectedItem(new Integer(4));
 		octaveComboBox.addMouseListener(new MessageMouseListener(controller, "The octave for a note"));
+		octaveComboBox.addActionListener(updateSelectedNoteListener);
 		pitchPanel.add(octaveComboBox);
 		dutyComboBox = new JComboBox<>(Duties);
 		dutyComboBox.setSelectedItem("1/2");
 		dutyComboBox.addMouseListener(new MessageMouseListener(controller, "Wave duty cycle"));
+		dutyComboBox.addActionListener(updateSelectedNoteListener);
 		pitchPanel.add(dutyComboBox);
 		add(pitchPanel);
 		
@@ -92,6 +103,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 				volumeLabel.setText("" + volumeSlider.getValue());
 			}
 		});
+		
 		volumePanel.add(volumeSlider);
 		volumeLabel = new JLabel("15");
 		volumeLabel.setPreferredSize(new Dimension(25, 10));
@@ -154,9 +166,9 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		sweepStepComboBox = new JComboBox<>(SweepSteps);
 		sweepStepComboBox.addMouseListener(new MessageMouseListener(controller, "Time between sweep steps (0 = no sweep)"));
 		sweepStepPanel.add(sweepStepComboBox);
-		sweepDirectionCheckBox = new JCheckBox("Increasing", false);
-		sweepDirectionCheckBox.addMouseListener(new MessageMouseListener(controller, "Sweep direction"));
-		sweepStepPanel.add(sweepDirectionCheckBox);
+		increasingSweepCheckBox = new JCheckBox("Increasing", false);
+		increasingSweepCheckBox.addMouseListener(new MessageMouseListener(controller, "Sweep direction"));
+		sweepStepPanel.add(increasingSweepCheckBox);
 		add(sweepStepPanel);
 		
 		// Play note panel
@@ -173,6 +185,45 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		playNoteButton.addMouseListener(new MessageMouseListener(controller, "Test the note sound"));
 		playNotePanel.add(playNoteButton);
 		add(playNotePanel);
+	}
+	
+	/**
+	 * Update the UI from a Note object's properties
+	 * @param note The Note object
+	 */
+	public void updateUIFromNote(Note note) {
+		noteComboBox.setSelectedIndex(note.musicalNote);
+		octaveComboBox.setSelectedItem(new Integer(note.octave));
+		switch((int) (note.dutyCycle * 4)) {
+		case 0:
+			dutyComboBox.setSelectedItem("1/8");
+			break;
+		case 1:
+			dutyComboBox.setSelectedItem("1/4");
+			break;
+		case 2:
+			dutyComboBox.setSelectedItem("1/2");
+			break;
+		case 3:
+			dutyComboBox.setSelectedItem("3/4");
+			break;
+		}
+		volumeSlider.setValue(note.volume);
+		volumeLabel.setText("" + note.volume);
+		envelopeComboBox.setSelectedIndex(note.envelopeStep);
+		increasingEnvelopeCheckBox.setSelected(note.increasingEnvelope);
+		cutoffSlider.setValue(note.cutoffValue);
+		if(note.hasCutoff) {
+			cutoffCheckBox.setSelected(true);
+			cutoffSlider.setEnabled(true);
+		} else {
+			cutoffCheckBox.setSelected(false);
+			cutoffSlider.setEnabled(false);
+		}
+		cutoffLabel.setText(note.hasCutoff ? String.format("%d ms", ((64 - cutoffSlider.getValue()) * 1000) >> 8) : "");
+		sweepRateComboBox.setSelectedIndex(note.sweepRate);
+		sweepStepComboBox.setSelectedIndex(note.sweepStep);
+		increasingSweepCheckBox.setSelected(note.increasingSweep);
 	}
 	
 	/**
@@ -204,7 +255,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		note.cutoffValue = cutoffSlider.getValue();
 		note.sweepRate = sweepRateComboBox.getSelectedIndex();
 		note.sweepStep = sweepStepComboBox.getSelectedIndex();
-		note.increasingSweep = sweepDirectionCheckBox.isSelected();
+		note.increasingSweep = increasingSweepCheckBox.isSelected();
 		return note;
 	}
 }
