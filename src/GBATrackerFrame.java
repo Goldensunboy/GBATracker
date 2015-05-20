@@ -129,6 +129,14 @@ public class GBATrackerFrame extends JFrame {
 	}
 	
 	/**
+	 * Enable or disable looping
+	 * @param enable If true, loop the song
+	 */
+	public void setLoopingEnabled(boolean enable) {
+		simulationPanel.setLoopingEnabled(enable);
+	}
+	
+	/**
 	 * Create an instance of the main program's window
 	 */
 	public GBATrackerFrame() {

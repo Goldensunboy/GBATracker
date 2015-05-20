@@ -42,6 +42,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 	private JCheckBox increasingEnvelopeCheckBox;
 	private JRadioButton counterWidth15BitsButton;
 	private JRadioButton counterWidth7BitsButton;
+	private static boolean allowUpdates = true;
 	
 	/**
 	 * Create the UI for the noise channel modifiers
@@ -59,7 +60,9 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		ActionListener updateSelectedNoteListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				controller.updateSelectedNote(createNote());
+				if(allowUpdates) {
+					controller.updateSelectedNote(createNote());
+				}
 			}
 		};
 		
@@ -79,7 +82,9 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 			@Override
 			public void stateChanged(ChangeEvent arg0) {
 				shiftFrequencyLabel.setText("" + shiftFrequencySlider.getValue());
-				controller.updateSelectedNote(createNote());
+				if(allowUpdates) {
+					controller.updateSelectedNote(createNote());
+				}
 			}
 		});
 		frequencyPanel.add(shiftFrequencySlider);
@@ -99,6 +104,9 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				volumeLabel.setText("" + volumeSlider.getValue());
+				if(allowUpdates) {
+					controller.updateSelectedNote(createNote());
+				}
 			}
 		});
 		volumePanel.add(volumeSlider);
@@ -113,9 +121,11 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		envelopeComboBox = new JComboBox<>(Envelopes);
 		envelopeComboBox.setSelectedItem(new Integer(3));
 		envelopeComboBox.addMouseListener(new MessageMouseListener(controller, "Envelope volume step time (n/64 s)"));
+		envelopeComboBox.addActionListener(updateSelectedNoteListener);
 		envelopePanel.add(envelopeComboBox);
 		increasingEnvelopeCheckBox = new JCheckBox("Increasing", false);
 		increasingEnvelopeCheckBox.addMouseListener(new MessageMouseListener(controller, "Increasing envelope volume (as opposed to decreasing)"));
+		increasingEnvelopeCheckBox.addActionListener(updateSelectedNoteListener);
 		envelopePanel.add(increasingEnvelopeCheckBox);
 		add(envelopePanel);
 		
@@ -129,6 +139,9 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 				boolean selected = cutoffCheckBox.isSelected();
 				cutoffSlider.setEnabled(selected);
 				cutoffLabel.setText(selected ? String.format("%d ms", ((64 - cutoffSlider.getValue()) * 1000) >> 8) : "");
+				if(allowUpdates) {
+					controller.updateSelectedNote(createNote());
+				}
 			}
 		});
 		cutoffPanel.add(cutoffCheckBox);
@@ -140,6 +153,9 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 			@Override
 			public void stateChanged(ChangeEvent arg0) {
 				cutoffLabel.setText(String.format("%d ms", ((64 - cutoffSlider.getValue()) * 1000) >> 8));
+				if(allowUpdates) {
+					controller.updateSelectedNote(createNote());
+				}
 			}
 		});
 		cutoffSlider.setEnabled(false);
@@ -155,10 +171,12 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		ButtonGroup counterWidthGroup = new ButtonGroup();
 		counterWidth15BitsButton = new JRadioButton("15 bits", true);
 		counterWidth15BitsButton.addMouseListener(new MessageMouseListener(controller, "Randomization vector: 2^15"));
+		counterWidth15BitsButton.addActionListener(updateSelectedNoteListener);
 		counterWidthGroup.add(counterWidth15BitsButton);
 		counterWidthPanel.add(counterWidth15BitsButton);
 		counterWidth7BitsButton = new JRadioButton("7 bits", false);
 		counterWidth7BitsButton.addMouseListener(new MessageMouseListener(controller, "Randomization vector: 2^7"));
+		counterWidth7BitsButton.addActionListener(updateSelectedNoteListener);
 		counterWidthGroup.add(counterWidth7BitsButton);
 		counterWidthPanel.add(counterWidth7BitsButton);
 		add(counterWidthPanel);
@@ -185,6 +203,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 	 * @param note The Note object
 	 */
 	public void updateUIFromNote(Note note) {
+		allowUpdates = false;
 		ratioComboBox.setSelectedIndex((int) note.dividingRatio);
 		shiftFrequencySlider.setValue(note.shiftClockFrequency);
 		shiftFrequencyLabel.setText("" + note.shiftClockFrequency);
@@ -206,6 +225,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		} else {
 			counterWidth7BitsButton.setSelected(true);
 		}
+		allowUpdates = true;
 	}
 	
 	/**

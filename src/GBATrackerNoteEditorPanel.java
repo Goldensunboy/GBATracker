@@ -7,6 +7,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -29,6 +30,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	private JComboBox<Integer> quantizationComboBox;
 	private GBATrackerSquareChannelPanel squareChannelPanel;
 	private GBATrackerNoiseChannelPanel noiseChannelPanel;
+	private JCheckBox loopCheckBox;
 	
 	/**
 	 * Get the title of the song
@@ -103,24 +105,36 @@ public class GBATrackerNoteEditorPanel extends JPanel {
                 BorderFactory.createTitledBorder("Song Properties"),
                 BorderFactory.createEmptyBorder(5,5,5,5)));
 		
-		JPanel panel1 = new JPanel(new FlowLayout(FlowLayout.LEADING));
-		panel1.add(new JLabel("Title:"));
+		// Title
+		JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		titlePanel.add(new JLabel("Title:"));
 		titleTextField = new JTextField(10);
 		titleTextField.setText("mysong");
 		titleTextField.addMouseListener(new MessageMouseListener(controller, "Title of the song"));
-		panel1.add(titleTextField);
-		editorPropertiesPanel.add(panel1);
+		titlePanel.add(titleTextField);
+		editorPropertiesPanel.add(titlePanel);
 		
-		JPanel panel2 = new JPanel(new FlowLayout(FlowLayout.LEADING));
-		panel2.add(new JLabel("BPM:"));
+		// BPM
+		JPanel bpmPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		bpmPanel.add(new JLabel("BPM:"));
 		bpmTextField = new JTextField(4);
 		bpmTextField.setText("150");
 		bpmTextField.addMouseListener(new MessageMouseListener(controller, "Speed of the song in beats per minute"));
-		panel2.add(bpmTextField);
-		editorPropertiesPanel.add(panel2);
+		bpmPanel.add(bpmTextField);
+		loopCheckBox = new JCheckBox("Loop", true);
+		loopCheckBox.addMouseListener(new MessageMouseListener(controller, "Loop the song"));
+		loopCheckBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				controller.setLoopingEnabled(loopCheckBox.isSelected());
+			}
+		});
+		bpmPanel.add(loopCheckBox);
+		editorPropertiesPanel.add(bpmPanel);
 		
-		JPanel panel3 = new JPanel(new FlowLayout(FlowLayout.LEADING));
-		panel3.add(new JLabel("Quantization:"));
+		// Quantization
+		JPanel quantizationPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		quantizationPanel.add(new JLabel("Quantization:"));
 		quantizationComboBox = new JComboBox<>(Quantizations);
 		quantizationComboBox.setSelectedItem(new Integer(8));
 		quantizationComboBox.addMouseListener(new MessageMouseListener(controller, "Editor quantization"));
@@ -130,10 +144,11 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 				controller.setQuantization((Integer) quantizationComboBox.getSelectedItem());
 			}
 		});
-		panel3.add(quantizationComboBox);
-		editorPropertiesPanel.add(panel3);
+		quantizationPanel.add(quantizationComboBox);
+		editorPropertiesPanel.add(quantizationPanel);
 		
-		JPanel panel4 = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		// View
+		JPanel viewPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		JButton zoomInButton = new JButton("+");
 		zoomInButton.addMouseListener(new MessageMouseListener(controller, "Zoom in"));
 		zoomInButton.addActionListener(new ActionListener() {
@@ -143,7 +158,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 				controller.setTooltipText(String.format("%d%%", (int) (newZoom * 100)));
 			}
 		});
-		panel4.add(zoomInButton);
+		viewPanel.add(zoomInButton);
 		JButton zoomOutButton = new JButton("-");
 		zoomOutButton.addMouseListener(new MessageMouseListener(controller, "Zoom out"));
 		zoomOutButton.addActionListener(new ActionListener() {
@@ -153,7 +168,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 				controller.setTooltipText(String.format("%d%%", (int) (newZoom * 100)));
 			}
 		});
-		panel4.add(zoomOutButton);
+		viewPanel.add(zoomOutButton);
 		JButton moveLeftButton = new JButton("<");
 		moveLeftButton.addMouseListener(new MessageMouseListener(controller, "Move left"));
 		moveLeftButton.addActionListener(new ActionListener() {
@@ -163,7 +178,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 				controller.setTooltipText(String.format("Measure: %.1f", newPos));
 			}
 		});
-		panel4.add(moveLeftButton);
+		viewPanel.add(moveLeftButton);
 		JButton moveRightButton = new JButton(">");
 		moveRightButton.addMouseListener(new MessageMouseListener(controller, "Move right"));
 		moveRightButton.addActionListener(new ActionListener() {
@@ -173,8 +188,8 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 				controller.setTooltipText(String.format("Measure: %.1f", newPos));
 			}
 		});
-		panel4.add(moveRightButton);
-		editorPropertiesPanel.add(panel4);
+		viewPanel.add(moveRightButton);
+		editorPropertiesPanel.add(viewPanel);
 		
 		// Clean up
 		editorPropertiesPanel.add(Box.createRigidArea(new Dimension(220, 107)));

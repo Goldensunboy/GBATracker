@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
@@ -25,8 +24,10 @@ public class GBATrackerSimulationPanel extends JPanel {
 	private static final double MAX_ZOOM = 3.0;
 	private static final double MIN_ZOOM = 0.2;
 	private static final double ZOOM_DELTA = 0.8;
-	private static final double SCROLL_DELTA = 0.35;
+	private static final double SCROLL_DELTA = 0.1;
 	private static final int NOTE_SIZE = 35;
+	private static final int[] PlaySliderPolygonX = {-8, 8, 0};
+	private static final int[] PlaySliderPolygonY = {0, 0, 8};
 	
 	/** Variables that define the simulation */
 	private double zoom = 0.7;
@@ -38,6 +39,26 @@ public class GBATrackerSimulationPanel extends JPanel {
 	private int selectedNoteChannel;
 	private boolean simulating = false;
 	private double playSlider = 0;
+	private int endStep = 48;
+	private int loopStep = 0;
+	private boolean looping = true;
+	private int loopStart = 0;
+	
+	/**
+	 * Get the maximum step for the notes currently placed
+	 * @return The maximum step, in 48ths
+	 */
+	private int getMaxStep() {
+		int maxStep = 0;
+		for(int i = 0; i < 3; ++i) {
+			for(EditorNote edn : channels.get(i).notes) {
+				if(edn.step > maxStep) {
+					maxStep = edn.step;
+				}
+			}
+		}
+		return maxStep;
+	}
 	
 	/**
 	 * Initialize the simulation panel and the simulation variables
@@ -70,7 +91,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 				
 				// Which channel was clicked?
 				clickChannel = e.getY() / (getHeight() >> 2) - 1;
-				if(clickChannel < 0) {
+				if(clickChannel < -1) {
 					return;
 				}
 				
@@ -89,6 +110,29 @@ public class GBATrackerSimulationPanel extends JPanel {
 				}
 				clickStep *= 48 / quantization;
 				
+				// Was the end marker clicked?
+				if(clickChannel == -1) {
+					if(e.getButton() == MouseEvent.BUTTON1) {
+						if(clickStep > 0) {
+							endStep = Math.max(clickStep, getMaxStep());
+							if(loopStep >= endStep) {
+								loopStep = endStep - 48 / quantization;
+							}
+						}
+					} else {
+						loopStep = clickStep;
+						if(loopStep >= endStep) {
+							loopStep = endStep - 48 / quantization;
+						}
+					}
+					repaint();
+					return;
+				} else if(clickStep > endStep) {
+					if(e.getButton() == MouseEvent.BUTTON1) {
+						endStep = clickStep;
+					}
+				}
+				
 				// Is there already a note here?
 				Note newNote = controller.getNoteFromUI(clickChannel < 2);
 				EditorNote newEdNote = new EditorNote(newNote, clickStep);
@@ -97,11 +141,11 @@ public class GBATrackerSimulationPanel extends JPanel {
 						// If there is, play the existing note and update the UI
 						for(EditorNote n : channels.get(clickChannel).notes) {
 							if(n.step == clickStep) {
-								n.note.playSound(channels.get(clickChannel).channel);
 								controller.updateUIFromNote(n.note);
 								if(n.equals(selectedNote) && clickChannel == selectedNoteChannel) {
 									selectedNote = null;
 								} else {
+									n.note.playSound(channels.get(clickChannel).channel);
 									selectedNote = n;
 									selectedNoteChannel = clickChannel;
 								}
@@ -156,11 +200,15 @@ public class GBATrackerSimulationPanel extends JPanel {
 	 * @param note
 	 */
 	public void updateSelectedNote(Note newNote) {
+		System.out.println("Test");
 		if(selectedNote != null) {
 			EditorChannel ch = channels.get(selectedNoteChannel);
 			for(EditorNote n : ch.notes) {
 				if(n.equals(selectedNote)) {
-					n.note = newNote;
+					if(n.note.isSquareType == newNote.isSquareType) {
+						n.note = newNote;
+						newNote.playSound(channels.get(selectedNoteChannel).channel);
+					}
 				}
 			}
 			repaint();
@@ -214,8 +262,21 @@ public class GBATrackerSimulationPanel extends JPanel {
 		return scroll;
 	}
 	
+	/**
+	 * Set the quantization level for the editor
+	 * @param quantization The new quantization
+	 */
 	public void setQuantization(int quantization) {
 		this.quantization = quantization;
+		repaint();
+	}
+	
+	/**
+	 * Enable or disable looping
+	 * @param enable If true, loop the song
+	 */
+	public void setLoopingEnabled(boolean enable) {
+		looping = enable;
 		repaint();
 	}
 	
@@ -227,7 +288,6 @@ public class GBATrackerSimulationPanel extends JPanel {
 		
 		// Set up brush
 		Graphics2D g = (Graphics2D) _g;
-		g.setStroke(new BasicStroke(3));
 		g.setColor(Color.WHITE);
 		g.setFont(new Font("TimesRoman", Font.PLAIN, 20));
 		
@@ -235,18 +295,31 @@ public class GBATrackerSimulationPanel extends JPanel {
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, getWidth(), getHeight());
 		
-		// Quantization bars
-		int cellHeight = getHeight() >> 2;
+		// Play marker
 		double measureWidth = getWidth() * zoom;
+		double X = (Math.ceil(scroll) * measureWidth) - scroll * measureWidth;
+		double Y = 20;
+		g.setColor(Color.DARK_GRAY);
+		g.drawLine((int) Math.round(X), (int) Math.round(Y), (int) Math.round(X), getHeight());
+		g.setColor(Color.GREEN);
+		int[] polyPointsX = new int[3];
+		int[] polyPointsY = new int[3];
+		for(int i = 0; i < PlaySliderPolygonX.length; ++i) {
+			polyPointsX[i] = PlaySliderPolygonX[i] + (int) Math.round(X);
+			polyPointsY[i] = PlaySliderPolygonY[i] + (int) Math.round(Y);
+		}
+		g.fillPolygon(polyPointsX, polyPointsY, PlaySliderPolygonX.length);
+		
+		// Quantization bars
+		g.setStroke(new BasicStroke(3));
+		int cellHeight = getHeight() >> 2;
 		int n = (int) Math.ceil(scroll);
 		double barX = (n - scroll) * measureWidth;
-		Stroke tempStroke = g.getStroke();
 		g.setStroke(new BasicStroke(1));
 		g.setColor(Color.LIGHT_GRAY);
 		for(double qBarX = barX - measureWidth; qBarX < getWidth(); qBarX += measureWidth / quantization) {
 			g.drawLine((int) Math.round(qBarX), 3 * cellHeight / 2, (int) Math.round(qBarX), getHeight());
 		}
-		g.setStroke(tempStroke);
 		g.setColor(Color.WHITE);
 		
 		// Horizontal bars
@@ -256,19 +329,19 @@ public class GBATrackerSimulationPanel extends JPanel {
 		}
 		
 		// Measure bars
-		for(; barX < getWidth(); barX += measureWidth) {
+		for(g.setStroke(new BasicStroke(3)); barX < getWidth(); barX += measureWidth) {
 			g.drawLine((int) barX, cellHeight, (int) barX, getHeight());
 			String label = String.format("%d", n++);
 			Rectangle2D stringBounds = g.getFontMetrics().getStringBounds(label, g);
-			g.drawString(label, (int) Math.round((barX - stringBounds.getWidth() / 2)), (int) Math.round((cellHeight - stringBounds.getHeight())));
+			g.drawString(label, (int) Math.round((barX - stringBounds.getWidth() / 2)), (int) Math.round((cellHeight - stringBounds.getHeight() + 5)));
 		}
 		
 		// Draw the notes
 		g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
 		for(int channelNum = 0; channelNum < 3; ++channelNum) {
 			for(EditorNote edNote : channels.get(channelNum).notes) {
-				double X = (edNote.step * measureWidth / 48) - scroll * measureWidth;
-				double Y = cellHeight * channelNum + 3 * cellHeight / 2;
+				X = (edNote.step * measureWidth / 48) - scroll * measureWidth;
+				Y = cellHeight * channelNum + 3 * cellHeight / 2;
 				g.setColor(Color.CYAN);
 				g.fillRect((int) Math.round(X) - NOTE_SIZE / 2, (int) Math.round(Y) - NOTE_SIZE / 2, NOTE_SIZE, NOTE_SIZE);
 				g.setColor(Color.BLACK);
@@ -288,6 +361,21 @@ public class GBATrackerSimulationPanel extends JPanel {
 					g.setColor(Color.CYAN);
 				}
 			}
+		}
+		
+		// End marker
+		X = (endStep * measureWidth / 48) - scroll * measureWidth;
+		g.setColor(Color.WHITE);
+		String label = String.format("End", n++);
+		Rectangle2D stringBounds = g.getFontMetrics().getStringBounds(label, g);
+		g.drawString(label, (int) (Math.round(X) - stringBounds.getWidth() / 2), (int) stringBounds.getHeight());
+		
+		// Loop marker
+		if(looping) {
+			X = (loopStep * measureWidth / 48) - scroll * measureWidth;
+			label = String.format("Loop", n++);
+			stringBounds = g.getFontMetrics().getStringBounds(label, g);
+			g.drawString(label, (int) (Math.round(X) - stringBounds.getWidth() / 2), (int) stringBounds.getHeight());
 		}
 		
 //		g.setColor(Color.CYAN);

@@ -50,6 +50,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 	private JCheckBox increasingSweepCheckBox;
 	private JSlider volumeSlider;
 	private JLabel volumeLabel;
+	private static boolean allowUpdates = true;
 	
 	/**
 	 * Create the UI for the square wave channel modifiers
@@ -67,7 +68,9 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		ActionListener updateSelectedNoteListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				controller.updateSelectedNote(createNote());
+				if(allowUpdates) {
+					controller.updateSelectedNote(createNote());
+				}
 			}
 		};
 		
@@ -101,6 +104,9 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				volumeLabel.setText("" + volumeSlider.getValue());
+				if(allowUpdates) {
+					controller.updateSelectedNote(createNote());
+				}
 			}
 		});
 		
@@ -116,9 +122,11 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		envelopeComboBox = new JComboBox<>(Envelopes);
 		envelopeComboBox.setSelectedItem(new Integer(2));
 		envelopeComboBox.addMouseListener(new MessageMouseListener(controller, "Envelope volume step time (n/64 s)"));
+		envelopeComboBox.addActionListener(updateSelectedNoteListener);
 		envelopePanel.add(envelopeComboBox);
 		increasingEnvelopeCheckBox = new JCheckBox("Increasing", false);
 		increasingEnvelopeCheckBox.addMouseListener(new MessageMouseListener(controller, "Increasing envelope volume (as opposed to decreasing)"));
+		increasingEnvelopeCheckBox.addActionListener(updateSelectedNoteListener);
 		envelopePanel.add(increasingEnvelopeCheckBox);
 		add(envelopePanel);
 		
@@ -132,6 +140,9 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 				boolean selected = cutoffCheckBox.isSelected();
 				cutoffSlider.setEnabled(selected);
 				cutoffLabel.setText(selected ? String.format("%d ms", ((64 - cutoffSlider.getValue()) * 1000) >> 8) : "");
+				if(allowUpdates) {
+					controller.updateSelectedNote(createNote());
+				}
 			}
 		});
 		cutoffPanel.add(cutoffCheckBox);
@@ -143,6 +154,9 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 			@Override
 			public void stateChanged(ChangeEvent arg0) {
 				cutoffLabel.setText(String.format("%d ms", ((64 - cutoffSlider.getValue()) * 1000) >> 8));
+				if(allowUpdates) {
+					controller.updateSelectedNote(createNote());
+				}
 			}
 		});
 		cutoffSlider.setEnabled(false);
@@ -157,6 +171,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		sweepRatePanel.add(new JLabel("Sweep rate:"));
 		sweepRateComboBox = new JComboBox<>(SweepRates);
 		sweepRateComboBox.addMouseListener(new MessageMouseListener(controller, "Rate of sweep change"));
+		sweepRateComboBox.addActionListener(updateSelectedNoteListener);
 		sweepRatePanel.add(sweepRateComboBox);
 		add(sweepRatePanel);
 		
@@ -165,9 +180,11 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		sweepStepPanel.add(new JLabel("Step:"));
 		sweepStepComboBox = new JComboBox<>(SweepSteps);
 		sweepStepComboBox.addMouseListener(new MessageMouseListener(controller, "Time between sweep steps (0 = no sweep)"));
+		sweepStepComboBox.addActionListener(updateSelectedNoteListener);
 		sweepStepPanel.add(sweepStepComboBox);
 		increasingSweepCheckBox = new JCheckBox("Increasing", false);
 		increasingSweepCheckBox.addMouseListener(new MessageMouseListener(controller, "Sweep direction"));
+		increasingSweepCheckBox.addActionListener(updateSelectedNoteListener);
 		sweepStepPanel.add(increasingSweepCheckBox);
 		add(sweepStepPanel);
 		
@@ -192,6 +209,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 	 * @param note The Note object
 	 */
 	public void updateUIFromNote(Note note) {
+		allowUpdates = false;
 		noteComboBox.setSelectedIndex(note.musicalNote);
 		octaveComboBox.setSelectedItem(new Integer(note.octave));
 		switch((int) (note.dutyCycle * 4)) {
@@ -224,6 +242,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		sweepRateComboBox.setSelectedIndex(note.sweepRate);
 		sweepStepComboBox.setSelectedIndex(note.sweepStep);
 		increasingSweepCheckBox.setSelected(note.increasingSweep);
+		allowUpdates = true;
 	}
 	
 	/**
