@@ -9,8 +9,10 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.swing.Box;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -42,7 +44,6 @@ public class GBATrackerSimulationPanel extends JPanel {
 	private int endStep = 48;
 	private int loopStep = 0;
 	private boolean looping = true;
-	private int loopStart = 0;
 	
 	/**
 	 * Get the maximum step for the notes currently placed
@@ -109,6 +110,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 					return;
 				}
 				clickStep *= 48 / quantization;
+				controller.setModified();
 				
 				// Was the end marker clicked?
 				if(clickChannel == -1) {
@@ -213,6 +215,27 @@ public class GBATrackerSimulationPanel extends JPanel {
 			}
 			repaint();
 		}
+	}
+	
+	/**
+	 * Play the file from the start
+	 */
+	public void play() {
+		// TODO
+	}
+	
+	/**
+	 * Play the file from an offset
+	 */
+	public void playHere() {
+		// TODO
+	}
+	
+	/**
+	 * Stop playing the file
+	 */
+	public void stop() {
+		// TODO
 	}
 	
 	/**
@@ -377,11 +400,83 @@ public class GBATrackerSimulationPanel extends JPanel {
 			stringBounds = g.getFontMetrics().getStringBounds(label, g);
 			g.drawString(label, (int) (Math.round(X) - stringBounds.getWidth() / 2), (int) stringBounds.getHeight());
 		}
+	}
+	
+	/**
+	 * Generate a String representation of the notes
+	 * @return The String representation of the notes
+	 */
+	public String generateCSV() {
+		String str = endStep + "," + loopStep;
+		for(int i = 0; i < 3; ++i) {
+			str += "," + channels.get(i).notes.size();
+			for(EditorNote edn : channels.get(i).notes) {
+				if(i < 2) {
+					str += "," + edn.note.getSWP();
+				}
+				str += "," + edn.note.getENV();
+				str += "," + edn.note.getFRQ();
+				str += "," + edn.step;
+			}
+		}
+		return str;
+	}
+	
+	/**
+	 * Populate the notes from a String representation
+	 * @param csv The csv-format String representation
+	 */
+	public void populateFromString(String csv) {
 		
-//		g.setColor(Color.CYAN);
-//		double Y = cellHeight * clickChannel + 3 * cellHeight / 2;
-//		double X = (clickStep * measureWidth / quantization) - scroll * measureWidth;
-//		g.drawOval((int) X - 15, (int) Y - 15, 30, 30);
+		// Scanner used to parse the csv
+		Scanner sc = new Scanner(csv);
+		sc.useDelimiter(",");
+		
+		// New channels
+		List<EditorChannel> newChannels = new ArrayList<>();
+		newChannels.add(new EditorChannel(true));
+		newChannels.add(new EditorChannel(false));
+		newChannels.add(new EditorChannel(true));
+		
+		// Fail gracefully on parse error
+		try {
+			int newEndStep = Integer.parseInt(sc.next());
+			int newLoopStep = Integer.parseInt(sc.next());
+			
+			// For each channel...
+			for(int i = 0; i < 3; ++i) {
+				int len = Integer.parseInt(sc.next());
+				while(len-- > 0) {
+					Note note;
+					
+					// Differentiate between square and noise channels
+					if(i < 2) {
+						int SWP = Integer.parseInt(sc.next());
+						int ENV = Integer.parseInt(sc.next());
+						int FRQ = Integer.parseInt(sc.next());
+						note = new Note(SWP, ENV, FRQ);
+					} else {
+						int ENV = Integer.parseInt(sc.next());
+						int FRQ = Integer.parseInt(sc.next());
+						note = new Note(ENV, FRQ);
+					}
+					int step = Integer.parseInt(sc.next());
+					newChannels.get(i).notes.add(new EditorNote(note, step));
+				}
+			}
+			
+			// If all was successful, now set the values
+			selectedNote = null;
+			endStep = newEndStep;
+			loopStep = newLoopStep;
+			channels = newChannels;
+			repaint();
+		} catch(Exception e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "Corrupted file", "Unable to parse file", JOptionPane.ERROR_MESSAGE);
+		} finally {
+			sc.close();
+		}
 	}
 	
 	/**

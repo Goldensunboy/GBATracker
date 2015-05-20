@@ -1,9 +1,17 @@
 import java.awt.FlowLayout;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import javax.swing.BoxLayout;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * The main window of the GBA Tracker application
@@ -11,52 +19,157 @@ import javax.swing.JPanel;
  */
 public class GBATrackerFrame extends JFrame {
 	
+	/** Definitions */
+	private static final String APPLICATION_TITLE = "GBA Tracker";
+	private static final String EXTENSION = "gbt";
+	
 	/** Panels used by the application */
 	private GBATrackerControlPanel controlPanel;
 	private GBATrackerNoteEditorPanel noteEditorPanel;
 	private GBATrackerSimulationPanel simulationPanel;
 	private JLabel tooltipLabel = new JLabel(" ");
+	private File openFile = null;
+	private boolean modification = false;
+	private String songTitle = "untitled";
+	
+	/**
+	 * Warn the user if they make an error
+	 * @param msg The error message
+	 */
+	private void warningMessage(String msg) {
+		JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+	}
 	
 	/**
 	 * Load a song file
 	 */
 	public void loadFile() {
-		// TODO
+		
+		// Save warning if modified
+		if(modification) {
+			if(JOptionPane.showConfirmDialog(this, "You have unsaved changes.\nOpen another file anyway?",
+					"Are you sure?", JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_CANCEL_OPTION) {
+				return;
+			}
+		}
+		
+		// Select a file
+		JFileChooser chooser = new JFileChooser();
+	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
+	        "GBA Tracker files", EXTENSION);
+	    chooser.setFileFilter(filter);
+	    int returnVal = chooser.showOpenDialog(this);
+	    if(returnVal == JFileChooser.APPROVE_OPTION) {
+	    	openFile = chooser.getSelectedFile();
+
+	    	// Send the CSV data to the editor panel and simulation panel
+	    	Scanner sc = null;
+	    	try {
+	    		sc = new Scanner(openFile);
+	    		noteEditorPanel.updateFromCSV(sc.nextLine());
+	    		simulationPanel.populateFromString(sc.nextLine());
+	    	} catch(Exception e) {
+	    		e.printStackTrace();
+	    		JOptionPane.showMessageDialog(this, "Corrupted file", "Unable to parse file", JOptionPane.ERROR_MESSAGE);
+	    	} finally {
+	    		if(sc != null) {
+	    			sc.close();
+	    		}
+	    	}
+	    }
 	}
 	
 	/**
 	 * Save the current file
 	 */
 	public void saveFile() {
-		// TODO
+		
+		// Must have an opened file
+		if(openFile == null) {
+			saveFileAs();
+			return;
+		}
+		
+		// Save the file
+		try {
+			PrintWriter pw = new PrintWriter(openFile);
+			pw.println(noteEditorPanel.generateCSV());
+			pw.println(simulationPanel.generateCSV());
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "Unable to save file:\n" + e.getMessage(), "Error saving file", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 	
 	/**
 	 * Save as a new file
 	 */
 	public void saveFileAs() {
-		// TODO
+		
+		// Must have valid song name
+		if(!validName(songTitle)) {
+			warningMessage("Song title must be a valid C identifier");
+			return;
+		}
+		
+		// Select a file
+		JFileChooser chooser = new JFileChooser();
+	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
+	        "GBA Tracker files", EXTENSION);
+	    chooser.setFileFilter(filter);
+	    int returnVal = chooser.showSaveDialog(this);
+	    if(returnVal == JFileChooser.APPROVE_OPTION) {
+	    	openFile = chooser.getSelectedFile();
+	    	if(!Pattern.matches(".*\\." + EXTENSION, openFile.getName())) {
+	    		openFile = new File(openFile.getPath() + "." + EXTENSION);
+	    	}
+	    	// Call the regular save file function
+	    	saveFile();
+	    }
 	}
 	
 	/**
 	 * Play the file from the start
 	 */
 	public void play() {
-		// TODO
+		simulationPanel.play();
 	}
 	
 	/**
 	 * Play the file from an offset
 	 */
 	public void playHere() {
-		// TODO
+		simulationPanel.playHere();
 	}
 	
 	/**
 	 * Stop playing the file
 	 */
 	public void stop() {
-		// TODO
+		simulationPanel.stop();
+	}
+	
+	/**
+	 * Tell the program that a modification was made (for save warnings)
+	 */
+	public void setModified() {
+		if(!modification) {
+			modification = true;
+			setTitle(songTitle + "* - " + APPLICATION_TITLE);
+		}
+	}
+	
+	/**
+	 * Change the title bar name for the song
+	 * @param newTitle The new title
+	 */
+	public void setModifiedTitle(String newTitle) {
+		if("".equals(newTitle)) {
+			newTitle = "(blank)";
+		}
+		songTitle = newTitle;
+		setTitle(newTitle + (modification ? "*" : "") + " - " + APPLICATION_TITLE);
 	}
 	
 	/**
@@ -137,12 +250,21 @@ public class GBATrackerFrame extends JFrame {
 	}
 	
 	/**
+	 * Is this name a valid C identifier?
+	 * @param name
+	 * @return
+	 */
+	private boolean validName(String name) {
+		return Pattern.matches("[a-zA-Z_][a-zA-Z_0-9]*", name);
+	}
+	
+	/**
 	 * Create an instance of the main program's window
 	 */
 	public GBATrackerFrame() {
 		
 		// Initialize JFrame related properties
-		super("GBA Tracker");
+		super("untitled - " + APPLICATION_TITLE);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		JPanel content = new JPanel();
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
