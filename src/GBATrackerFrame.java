@@ -21,7 +21,7 @@ public class GBATrackerFrame extends JFrame {
 	
 	/** Definitions */
 	private static final String APPLICATION_TITLE = "GBA Tracker";
-	private static final String EXTENSION = "gbt";
+	private static final String FILE_EXTENSION = "gbt";
 	
 	/** Panels used by the application */
 	private GBATrackerControlPanel controlPanel;
@@ -54,9 +54,10 @@ public class GBATrackerFrame extends JFrame {
 		}
 		
 		// Select a file
+		File oldFile = openFile;
 		JFileChooser chooser = new JFileChooser();
 	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
-	        "GBA Tracker files", EXTENSION);
+	        "GBA Tracker files", FILE_EXTENSION);
 	    chooser.setFileFilter(filter);
 	    int returnVal = chooser.showOpenDialog(this);
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {
@@ -68,9 +69,16 @@ public class GBATrackerFrame extends JFrame {
 	    		sc = new Scanner(openFile);
 	    		noteEditorPanel.updateFromCSV(sc.nextLine());
 	    		simulationPanel.populateFromString(sc.nextLine());
+	    		modification = false;
+	    		songTitle = noteEditorPanel.getTitle();
+	    		setTitle(songTitle + " - " + APPLICATION_TITLE);
+	    	} catch(FileNotFoundException e) {
+	    		JOptionPane.showMessageDialog(this, "File not found:\n" + openFile.getName(), "Unable to open file", JOptionPane.ERROR_MESSAGE);
+	    		openFile = oldFile;
 	    	} catch(Exception e) {
 	    		e.printStackTrace();
-	    		JOptionPane.showMessageDialog(this, "Corrupted file", "Unable to parse file", JOptionPane.ERROR_MESSAGE);
+	    		JOptionPane.showMessageDialog(this, "Corrupted file", "Unable to parse file:\n" + openFile, JOptionPane.ERROR_MESSAGE);
+	    		openFile = oldFile;
 	    	} finally {
 	    		if(sc != null) {
 	    			sc.close();
@@ -96,6 +104,8 @@ public class GBATrackerFrame extends JFrame {
 			pw.println(noteEditorPanel.generateCSV());
 			pw.println(simulationPanel.generateCSV());
 			pw.close();
+			modification = false;
+			setTitle(songTitle + " - " + APPLICATION_TITLE);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(this, "Unable to save file:\n" + e.getMessage(), "Error saving file", JOptionPane.ERROR_MESSAGE);
@@ -116,13 +126,13 @@ public class GBATrackerFrame extends JFrame {
 		// Select a file
 		JFileChooser chooser = new JFileChooser();
 	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
-	        "GBA Tracker files", EXTENSION);
+	        "GBA Tracker files", FILE_EXTENSION);
 	    chooser.setFileFilter(filter);
 	    int returnVal = chooser.showSaveDialog(this);
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {
 	    	openFile = chooser.getSelectedFile();
-	    	if(!Pattern.matches(".*\\." + EXTENSION, openFile.getName())) {
-	    		openFile = new File(openFile.getPath() + "." + EXTENSION);
+	    	if(!Pattern.matches(".*\\." + FILE_EXTENSION, openFile.getName())) {
+	    		openFile = new File(openFile.getPath() + "." + FILE_EXTENSION);
 	    	}
 	    	// Call the regular save file function
 	    	saveFile();
