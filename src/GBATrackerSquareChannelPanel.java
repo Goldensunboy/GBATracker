@@ -25,7 +25,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
 	};
 	private static final Integer[] Octaves = {
-		0, 1, 2, 3, 4, 5, 6, 7, 8
+		2, 3, 4, 5, 6, 7
 	};
 	private static final String[] Duties = {
 		"1/8", "1/4", "1/2", "3/4"
@@ -180,10 +180,9 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 	 * @return The generated Note object
 	 */
 	public Note createNote() {
-		Note note = new Note();
-		note.isSquareType = true;
+		Note note = new Note(true);
 		note.musicalNote = noteComboBox.getSelectedIndex();
-		note.octave = octaveComboBox.getSelectedIndex();
+		note.octave = (Integer) octaveComboBox.getSelectedItem();
 		switch((String) dutyComboBox.getSelectedItem()) {
 		case "1/8":
 			note.dutyCycle = 0.125;

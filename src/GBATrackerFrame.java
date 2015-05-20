@@ -119,6 +119,9 @@ public class GBATrackerFrame extends JFrame {
 		content.add(simulationPanel);
 		content.add(messagePanel);
 		
+		// Generate noise buffer for Notes
+		Note.generateNoiseWaveform();
+		
 		// Finalize JFrame properties
 		setContentPane(content);
 		pack();

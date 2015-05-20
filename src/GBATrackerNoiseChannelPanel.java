@@ -174,8 +174,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 	 * @return The generated Note object
 	 */
 	public Note createNote() {
-		Note note = new Note();
-		note.isSquareType = false;
+		Note note = new Note(false);
 		note.volume = volumeSlider.getValue();
 		note.envelopeStep = envelopeComboBox.getSelectedIndex();
 		note.increasingEnvelope = increasingEnvelopeCheckBox.isSelected();

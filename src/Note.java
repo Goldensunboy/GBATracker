@@ -19,11 +19,6 @@ public class Note {
 	/** Used for noise generation */
 	private static Random rand = new Random(0); // deterministic
 	private static boolean rands[] = new boolean[0x7FFF];
-	static {
-		for(int i = 0; i < rands.length; ++i) {
-			rands[i] = rand.nextBoolean();
-		}
-	}
 	
 	/** Global parameters */
 	public boolean isSquareType;
@@ -45,6 +40,65 @@ public class Note {
 	public double dividingRatio;
 	public int shiftClockFrequency;
 	public boolean counterStepIs15Bits;
+	
+	/**
+	 * Empty constructor provided
+	 */
+	public Note(boolean isSquareType) {
+		this.isSquareType = isSquareType;
+	}
+	
+	/**
+	 * Construct a square channel note
+	 * @param SWP Sweep
+	 * @param ENV Envelope
+	 * @param FRQ Frequency
+	 */
+	public Note(int SWP, int ENV, int FRQ) {
+		isSquareType = true;
+		volume = (ENV >> 12) & 0xF;
+		envelopeStep = (ENV >> 8) & 7;
+		increasingEnvelope = ((ENV >> 11) & 1) == 1;
+		hasCutoff = ((FRQ >> 14) & 1) == 1;
+		cutoffValue = ENV & 0x3F;
+		switch((ENV >> 6) & 3) {
+		case 0:
+			dutyCycle = 0.125;
+			break;
+		case 1:
+			dutyCycle = 0.25;
+			break;
+		case 2:
+			dutyCycle = 0.5;
+			break;
+		case 3:
+			dutyCycle = 0.75;
+			break;
+		}
+		sweepRate = SWP & 7;
+		sweepStep = (SWP >> 4) & 7;
+		increasingSweep = ((SWP >> 3) & 1) == 0;
+		double freq = 131072.0 / (2048 - (FRQ & 0x7FF));
+		int steps = (int) Math.round(Math.log(freq / 440) / Math.log(2) * 12) + 33;
+		musicalNote = steps % 12;
+		octave = steps / 12 + 2;
+	}
+	
+	/**
+	 * Construct a noise channel note
+	 * @param ENV Envelope
+	 * @param FRQ Frequency
+	 */
+	public Note(int ENV, int FRQ) {
+		volume = (ENV >> 12) & 0xF;
+		envelopeStep = (ENV >> 8) & 7;
+		increasingEnvelope = ((ENV >> 11) & 1) == 1;
+		cutoffValue = ENV & 0x3F;
+		dividingRatio = FRQ & 7;
+		hasCutoff = ((FRQ >> 14) & 1) == 1;
+		shiftClockFrequency = (FRQ >> 4) & 0xF;
+		counterStepIs15Bits = ((FRQ >> 3) & 1) == 0;
+	}
 	
 	/**
 	 * Test the note sound using the test channel
@@ -178,6 +232,15 @@ public class Note {
 	}
 	
 	/**
+	 * Generate the waveform for the noise channel
+	 */
+	public static void generateNoiseWaveform() {
+		for(int i = 0; i < rands.length; ++i) {
+			rands[i] = rand.nextBoolean();
+		}
+	}
+	
+	/**
 	 * Return the sweep value for this Note
 	 * @return The sweep value in GBA format
 	 */
@@ -210,6 +273,7 @@ public class Note {
 	 * Print the register values corresponding to this note
 	 * @return The sound values for GBA
 	 */
+	@Override
 	public String toString() {
 		int ENV = getENV();
 		int FRQ = getFRQ();
