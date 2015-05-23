@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -198,7 +200,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 				if(clickChannel == -1) {
 					if(e.getButton() == MouseEvent.BUTTON1) {
 						if(clickStep > 0) {
-							endStep = Math.max(clickStep, getMaxStep());
+							endStep = Math.max(clickStep, getMaxStep() + 48 / quantization);
 							if(loopStep >= endStep) {
 								loopStep = endStep - 48 / quantization;
 							}
@@ -211,9 +213,9 @@ public class GBATrackerSimulationPanel extends JPanel {
 					}
 					repaint();
 					return;
-				} else if(clickStep > endStep) {
+				} else if(clickStep >= endStep) {
 					if(e.getButton() == MouseEvent.BUTTON1) {
-						endStep = clickStep;
+						endStep = clickStep + 48 / quantization;
 					}
 				}
 				
@@ -271,6 +273,17 @@ public class GBATrackerSimulationPanel extends JPanel {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				// unused
+			}
+		});
+		
+		addMouseWheelListener(new MouseWheelListener() {
+			@Override
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				if(e.getPreciseWheelRotation() < 0) {
+					moveRight();
+				} else {
+					moveLeft();
+				}
 			}
 		});
 	}
