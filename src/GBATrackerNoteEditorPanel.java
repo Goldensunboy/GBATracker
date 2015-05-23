@@ -21,6 +21,7 @@ import javax.swing.JTextField;
  * The editor panel, with note and song properties
  * @author Andrew Wilder
  */
+@SuppressWarnings("serial")
 public class GBATrackerNoteEditorPanel extends JPanel {
 	
 	/** Definitions */

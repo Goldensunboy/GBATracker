@@ -12,8 +12,8 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import javax.swing.Timer;
 
+import javax.swing.Timer;
 import javax.swing.Box;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -22,6 +22,7 @@ import javax.swing.JPanel;
  * The simulation panel for showing the timeline of notes
  * @author Andrew Wilder
  */
+@SuppressWarnings("serial")
 public class GBATrackerSimulationPanel extends JPanel {
 	
 	/** Definitions */
@@ -643,7 +644,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 				}
 			}
 			lineStr += n == null ? "0x0000,0x0000}," : String.format("0x%04X,0x%04X},", n.getENV(), n.getFRQ());
-			dataStr += "\t" + lineStr + "\n";
+			dataStr += "\t" + lineStr + (i < endStep - 1 ? "\n" : "");
 		}
 		return dataStr;
 	}
@@ -686,12 +687,5 @@ public class GBATrackerSimulationPanel extends JPanel {
 		/** The variables held by the EditorChannel object */
 		public List<EditorNote> notes = new ArrayList<>();
 		public Channel channel = new Channel();
-		
-		/**
-		 * Create a new EditorChannel object
-		 * @param channelHasSweep Used for preventing sweep on channel 2
-		 */
-		public EditorChannel() {
-		}
 	}
 }

@@ -18,6 +18,7 @@ import javax.swing.event.ChangeListener;
  * This class represents the controls for the square wave channel
  * @author Andrew Wilder
  */
+@SuppressWarnings("serial")
 public class GBATrackerSquareChannelPanel extends JPanel {
 	
 	/** Definitions */

@@ -1,7 +1,6 @@
 import java.awt.FlowLayout;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Date;
@@ -20,6 +19,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * The main window of the GBA Tracker application
  * @author Andrew Wilder
  */
+@SuppressWarnings("serial")
 public class GBATrackerFrame extends JFrame {
 	
 	/** Definitions */
@@ -161,6 +161,26 @@ public class GBATrackerFrame extends JFrame {
 	    int returnVal = chooser.showSaveDialog(this);
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {
 	    	
+	    	// Do the files already exist?
+	    	File outFileC = new File(chooser.getSelectedFile(), songTitle + ".c");
+	    	File outFileH = new File(chooser.getSelectedFile(), songTitle + ".h");
+	    	String existFiles = null;
+	    	if(outFileC.exists()) {
+	    		if(outFileH.exists()) {
+	    			existFiles = songTitle + ".c and " + songTitle + ".h";
+	    		} else {
+	    			existFiles = songTitle + ".c";
+	    		}
+	    	} else if(outFileH.exists()) {
+	    		existFiles = songTitle + ".h";
+	    	}
+	    	if(existFiles != null) {
+		    	if(JOptionPane.showConfirmDialog(this, "File " + existFiles + " already exists. Overwrite?", "Overwrite",
+		    			JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.OK_OPTION) {
+		    		return;
+		    	}
+	    	}
+	    	
 	    	// Read the templates
     		InputStream is = GBATrackerFrame.class.getResourceAsStream("res/ExportTemplateC");
 	    	Scanner sc = new Scanner(is, "UTF-8");
@@ -188,8 +208,6 @@ public class GBATrackerFrame extends JFrame {
 	    	textH = textH.replaceAll("\\$DATE", new Date().toString());
 	    	
 	    	// Write output files
-	    	File outFileC = new File(chooser.getSelectedFile(), songTitle + ".c");
-	    	File outFileH = new File(chooser.getSelectedFile(), songTitle + ".h");
 	    	try {
 				PrintWriter pw = new PrintWriter(outFileC);
 				pw.write(textC);
@@ -200,6 +218,9 @@ public class GBATrackerFrame extends JFrame {
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
+	    	
+	    	// Confirmation message
+	    	JOptionPane.showMessageDialog(this, "Exported:\n" + songTitle + ".c\n" + songTitle + ".h", "Export successful", JOptionPane.INFORMATION_MESSAGE);
 	    }
 	}
 	

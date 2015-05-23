@@ -62,10 +62,9 @@ typedef struct {
 } note_t;
 
 static void $SONGTITLE_step();
-#define LENGTH $LENGTH
 #define BPM_QUAN_TRANSFORM -(0x14000/$BPM)
 
-const note_t sound_data[LENGTH];
+const note_t sound_data[$LENGTH];
 void printNote(const note_t *n, int index);
 int index;
 
@@ -106,23 +105,23 @@ static void $SONGTITLE_step() {
 	switch(REG_IF) {
 	case IRQ_TIMER(0) :
 
-		if(sound_data[index].CH1_FRQ & 0x8000) {
+		if(sound_data[index].CH1_FRQ) {
 			REG_SND1SWP = sound_data[index].CH1_SWP;
 			REG_SND1ENV = sound_data[index].CH1_ENV;
 			REG_SND1FRQ = sound_data[index].CH1_FRQ;
 		}
 
-		if(sound_data[index].CH2_FRQ & 0x8000) {
+		if(sound_data[index].CH2_FRQ) {
 			REG_SND2ENV = sound_data[index].CH2_ENV;
 			REG_SND2FRQ = sound_data[index].CH2_FRQ;
 		}
 
-		if(sound_data[index].CH4_FRQ & 0x8000) {
+		if(sound_data[index].CH4_FRQ) {
 			REG_SND4ENV = sound_data[index].CH4_ENV;
 			REG_SND4FRQ = sound_data[index].CH4_FRQ;
 		}
 
-		if(++index == LENGTH) {
+		if(++index == $LENGTH) {
 			index = $LOOP;
 		}
 
@@ -136,5 +135,6 @@ static void $SONGTITLE_step() {
 }
 
 // Note data
-const note_t sound_data[LENGTH] = {
-$NOTEDATA};
+const note_t sound_data[$LENGTH] = {
+$NOTEDATA
+};

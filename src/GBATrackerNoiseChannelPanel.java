@@ -21,6 +21,7 @@ import javax.swing.event.ChangeListener;
  * This class represents the controls for the noise channel
  * @author Andrew Wilder
  */
+@SuppressWarnings("serial")
 public class GBATrackerNoiseChannelPanel extends JPanel {
 	
 	/** Definitions */

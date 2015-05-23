@@ -11,6 +11,7 @@ import javax.swing.JPanel;
  * The control panel, with buttons for saving, export and playback
  * @author Andrew Wilder
  */
+@SuppressWarnings("serial")
 public class GBATrackerControlPanel extends JPanel {
 	
 	public GBATrackerControlPanel(final GBATrackerFrame controller) {
