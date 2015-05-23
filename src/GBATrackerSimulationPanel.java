@@ -243,7 +243,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 				} else {
 					if(e.getButton() == MouseEvent.BUTTON1) {
 						// If there isn't, play the note, add it to channel
-						newNote.playSound(true);
+						newNote.playSound(clickChannel != 1);
 						channels.get(clickChannel).notes.add(newEdNote);
 						if(newNote.equals(selectedNote) && clickChannel == selectedNoteChannel) {
 							selectedNote = null;
