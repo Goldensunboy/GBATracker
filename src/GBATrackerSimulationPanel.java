@@ -33,7 +33,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 	private static final int NOTE_SIZE = 35;
 	private static final int[] PlaySliderPolygonX = {-8, 8, 0};
 	private static final int[] PlaySliderPolygonY = {0, 0, 8};
-	private static final int FRAMERATE = 30;
+	private static final int FRAMERATE = 60;
 	
 	/** Variables that define the simulation */
 	private double zoom = 0.7;
@@ -69,14 +69,27 @@ public class GBATrackerSimulationPanel extends JPanel {
 	/**
 	 * The ActionListener housing the update function for the simulation
 	 */
-	private ActionListener simulationListener = new ActionListener() {
-		int x = 0;
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			EditorNote edn = new EditorNote(null, playingStep);
+	private static class SimulationListener implements ActionListener {
+		
+		/** MS elapsed after last played note */
+		private int elapsedMS = 0;
+
+		/**
+		 * Reference to the simulation panel's fields
+		 */
+		GBATrackerSimulationPanel simPanel;
+		public SimulationListener(GBATrackerSimulationPanel simPanel) {
+			this.simPanel = simPanel;
+		}
+		
+		/**
+		 * Play a note of music
+		 */
+		private void playNote() {
+			EditorNote edn = new EditorNote(null, simPanel.playingStep);
 			Note[] playNotes = {null, null, null};
 			for(int i = 0; i < 3; ++i) {
-				EditorChannel edc = channels.get(i);
+				EditorChannel edc = simPanel.channels.get(i);
 				if(edc.notes.contains(edn)) {
 					for(EditorNote edn2 : edc.notes) {
 						if(edn2.equals(edn)) {
@@ -89,15 +102,32 @@ public class GBATrackerSimulationPanel extends JPanel {
 			}
 			for(int i = 0; i < 3; ++i) {
 				if(playNotes[i] != null) {
-					playNotes[i].playBuf(channels.get(i).channel);
+					playNotes[i].playBuf(simPanel.channels.get(i).channel);
 				}
 			}
-			if(++playingStep >= endStep) {
-				if(looping) {
-					playingStep = loopStep;
+			if(++simPanel.playingStep >= simPanel.endStep) {
+				if(simPanel.looping) {
+					simPanel.playingStep = simPanel.loopStep;
 				} else {
-					simulationTimer.stop();
+					simPanel.simulationTimer.stop();
 				}
+			}
+		}
+		
+		/**
+		 * Update graphics, nad play a note at appropriate times
+		 */
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			// Move the arrow
+			simPanel.playSlider = (simPanel.playingStep + (double) elapsedMS / (5000 / simPanel.controller.getBPM())) / 48;
+			simPanel.repaint();
+			
+			// Play a note
+			if((elapsedMS += 1000 / FRAMERATE) > 5000 / simPanel.controller.getBPM()) {
+				elapsedMS %= 5000 / simPanel.controller.getBPM();
+				playNote();
 			}
 		}
 	};
@@ -271,6 +301,8 @@ public class GBATrackerSimulationPanel extends JPanel {
 	 */
 	public void play() {
 		if(!simulating) {
+			
+			// Render the notes
 			controller.setTooltipText("Rendering notes...");
 			for(int i = 0; i < 3; ++i) {
 				for(EditorNote edn : channels.get(i).notes) {
@@ -278,9 +310,11 @@ public class GBATrackerSimulationPanel extends JPanel {
 				}
 			}
 			controller.setTooltipText(" ");
+			
+			// Start playing
 			playingStep = 0;
 			simulating = true;
-			simulationTimer = new Timer(5000 / getBPM(), simulationListener);
+			simulationTimer = new Timer(1000 / FRAMERATE, new SimulationListener(this));
 			simulationTimer.start();
 		}
 	}
@@ -290,9 +324,20 @@ public class GBATrackerSimulationPanel extends JPanel {
 	 */
 	public void playHere() {
 		if(!simulating) {
+			
+			// Render the notes
+			controller.setTooltipText("Rendering notes...");
+			for(int i = 0; i < 3; ++i) {
+				for(EditorNote edn : channels.get(i).notes) {
+					edn.note.prepareBuf(i != 1);
+				}
+			}
+			controller.setTooltipText(" ");
+			
+			// Start playing
 			playingStep = (int) Math.ceil(scroll);
 			simulating = true;
-			simulationTimer = new Timer(5000 / getBPM(), simulationListener);
+			simulationTimer = new Timer(1000 / FRAMERATE, new SimulationListener(this));
 			simulationTimer.start();
 		}
 	}
@@ -304,6 +349,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 		if(simulating) {
 			simulating = false;
 			simulationTimer.stop();
+			repaint();
 		}
 	}
 	
@@ -390,6 +436,9 @@ public class GBATrackerSimulationPanel extends JPanel {
 		// Play marker
 		double measureWidth = getWidth() * zoom;
 		double X = (Math.ceil(scroll) * measureWidth) - scroll * measureWidth;
+		if(simulating) {
+			X = (playSlider - scroll) * measureWidth;
+		}
 		double Y = 20;
 		g.setColor(Color.DARK_GRAY);
 		g.drawLine((int) Math.round(X), (int) Math.round(Y), (int) Math.round(X), getHeight());

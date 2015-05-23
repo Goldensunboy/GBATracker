@@ -119,14 +119,17 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
 				controller.setModifiedTitle(titleTextField.getText());
+				controller.setModified();
 			}
 			@Override
 			public void keyReleased(KeyEvent arg0) {
 				controller.setModifiedTitle(titleTextField.getText());
+				controller.setModified();
 			}
 			@Override
 			public void keyTyped(KeyEvent arg0) {
 				controller.setModifiedTitle(titleTextField.getText());
+				controller.setModified();
 			}
 		});
 		titlePanel.add(titleTextField);
@@ -138,6 +141,20 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		bpmTextField = new JTextField(4);
 		bpmTextField.setText("150");
 		bpmTextField.addMouseListener(new MessageMouseListener(controller, "Speed of the song in beats per minute"));
+		bpmTextField.addKeyListener(new KeyListener() {
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				controller.setModified();
+			}
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				controller.setModified();
+			}
+			@Override
+			public void keyTyped(KeyEvent arg0) {
+				controller.setModified();
+			}
+		});
 		bpmPanel.add(bpmTextField);
 		loopCheckBox = new JCheckBox("Loop", true);
 		loopCheckBox.addMouseListener(new MessageMouseListener(controller, "Loop the song"));
@@ -145,6 +162,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				controller.setLoopingEnabled(loopCheckBox.isSelected());
+				controller.setModified();
 			}
 		});
 		bpmPanel.add(loopCheckBox);
@@ -221,6 +239,14 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	 */
 	public String generateCSV() {
 		return titleTextField.getText() + "," + bpmTextField.getText() + "," + loopCheckBox.isSelected();
+	}
+	
+	/**
+	 * Get looping value
+	 * @return True if looping is enabled
+	 */
+	public boolean getLooping() {
+		return loopCheckBox.isSelected();
 	}
 	
 	/**

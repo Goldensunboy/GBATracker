@@ -70,6 +70,7 @@ public class GBATrackerFrame extends JFrame {
 	    		sc = new Scanner(openFile);
 	    		noteEditorPanel.updateFromCSV(sc.nextLine());
 	    		simulationPanel.populateFromString(sc.nextLine());
+	    		simulationPanel.setLoopingEnabled(noteEditorPanel.getLooping());
 	    		modification = false;
 	    		songTitle = noteEditorPanel.getTitle();
 	    		setTitle(songTitle + " - " + APPLICATION_TITLE);
