@@ -2,6 +2,7 @@ import java.awt.FlowLayout;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -140,6 +141,47 @@ public class GBATrackerFrame extends JFrame {
 	}
 	
 	/**
+	 * Export the project as a C file
+	 */
+	public void exportFile() {
+		
+		// Must have valid song name
+		if(!validName(songTitle)) {
+			warningMessage("Song title must be a valid C identifier");
+			return;
+		}
+		
+		// Select a folder
+		JFileChooser chooser = new JFileChooser();
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		
+	    int returnVal = chooser.showSaveDialog(this);
+	    if(returnVal == JFileChooser.APPROVE_OPTION) {
+	    	File outFileC = new File(chooser.getSelectedFile(), songTitle + ".c");
+	    	File outFileH = new File(chooser.getSelectedFile(), songTitle + ".h");
+	    	Scanner sc = new Scanner(GBATrackerFrame.class.getResourceAsStream("res/ExportTemplateC"), "UTF-8").useDelimiter("\\A");
+	    	String textC = sc.next();
+	    	sc.close();
+	    	textC = textC.replaceAll("\\$SONGTITLE", songTitle);
+	    	textC = textC.replaceAll("\\$FILENAME", openFile == null ? "(blank)" : openFile.getName());
+	    	textC = textC.replaceAll("\\$APPTITLE", APPLICATION_TITLE);
+	    	textC = textC.replaceAll("\\$DATE", new Date().toString());
+	    	textC = textC.replaceAll("\\$BPM", noteEditorPanel.getBPM());
+	    	textC = textC.replaceAll("\\$LENGTH", "\tTODO");
+	    	textC = textC.replaceAll("\\$NOTEDATA", "\tTODO");
+	    	textC = textC.replaceAll("\\$LOOP", "\tTODO");
+	    	sc = new Scanner(GBATrackerFrame.class.getResourceAsStream("res/ExportTemplateH"), "UTF-8").useDelimiter("\\A");
+	    	String textH = sc.next();
+	    	textH = textH.replaceAll("\\$SONGTITLE", songTitle);
+	    	textH = textH.replaceAll("\\$FILENAME", openFile == null ? "(blank)" : openFile.getName());
+	    	textH = textH.replaceAll("\\$APPTITLE", APPLICATION_TITLE);
+	    	textH = textH.replaceAll("\\$DATE", new Date().toString());
+	    	sc.close();
+	    	System.out.println(textH);
+	    }
+	}
+	
+	/**
 	 * Play the file from the start
 	 */
 	public void play() {
@@ -266,6 +308,14 @@ public class GBATrackerFrame extends JFrame {
 	 */
 	private boolean validName(String name) {
 		return Pattern.matches("[a-zA-Z_][a-zA-Z_0-9]*", name);
+	}
+	
+	/**
+	 * Send the BPM from the editor panel to the simulation panel
+	 * @return The BPM
+	 */
+	public int getBPM() {
+		return Integer.parseInt(noteEditorPanel.getBPM());
 	}
 	
 	/**

@@ -4,12 +4,15 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import javax.swing.Timer;
 
 import javax.swing.Box;
 import javax.swing.JOptionPane;
@@ -30,6 +33,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 	private static final int NOTE_SIZE = 35;
 	private static final int[] PlaySliderPolygonX = {-8, 8, 0};
 	private static final int[] PlaySliderPolygonY = {0, 0, 8};
+	private static final int FRAMERATE = 30;
 	
 	/** Variables that define the simulation */
 	private double zoom = 0.7;
@@ -44,6 +48,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 	private int endStep = 48;
 	private int loopStep = 0;
 	private boolean looping = true;
+	private int playingStep = 0;
 	
 	/**
 	 * Get the maximum step for the notes currently placed
@@ -62,19 +67,64 @@ public class GBATrackerSimulationPanel extends JPanel {
 	}
 	
 	/**
+	 * The ActionListener housing the update function for the simulation
+	 */
+	private ActionListener simulationListener = new ActionListener() {
+		int x = 0;
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			EditorNote edn = new EditorNote(null, playingStep);
+			Note[] playNotes = {null, null, null};
+			for(int i = 0; i < 3; ++i) {
+				EditorChannel edc = channels.get(i);
+				if(edc.notes.contains(edn)) {
+					for(EditorNote edn2 : edc.notes) {
+						if(edn2.equals(edn)) {
+							playNotes[i] = edn2.note;
+							playNotes[i].prepareBuf(i != 1);
+							break;
+						}
+					}
+				}
+			}
+			for(int i = 0; i < 3; ++i) {
+				if(playNotes[i] != null) {
+					playNotes[i].playBuf(channels.get(i).channel);
+				}
+			}
+			if(++playingStep >= endStep) {
+				if(looping) {
+					playingStep = loopStep;
+				} else {
+					simulationTimer.stop();
+				}
+			}
+		}
+	};
+	private Timer simulationTimer = null;
+	
+	/**
+	 * Get the BPM
+	 */
+	private final GBATrackerFrame controller;
+	public int getBPM() {
+		return controller.getBPM();
+	}
+	
+	/**
 	 * Initialize the simulation panel and the simulation variables
 	 * @param controller Reference to the main controller
 	 */
 	public GBATrackerSimulationPanel(final GBATrackerFrame controller) {
 		
 		// No actual components, just a rigid area to maintain window size
-		//this.controller = controller;
-		add(Box.createRigidArea(new Dimension(800, 300)));
+		this.controller = controller;
+		add(Box.createRigidArea(new Dimension(800, 260)));
 		
 		// Instantiate the channel data
-		channels.add(new EditorChannel(true));  // Channel 1 (square w/ sweep)
-		channels.add(new EditorChannel(false)); // Channel 2 (square)
-		channels.add(new EditorChannel(true));  // Channel 4 (noise)
+		channels.add(new EditorChannel()); // Channel 1 (square w/ sweep)
+		channels.add(new EditorChannel()); // Channel 2 (square)
+		channels.add(new EditorChannel()); // Channel 4 (noise)
 		
 		// Create the MouseListener that handling clicking
 		addMouseListener(new MouseListener() {
@@ -147,7 +197,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 								if(n.equals(selectedNote) && clickChannel == selectedNoteChannel) {
 									selectedNote = null;
 								} else {
-									n.note.playSound(channels.get(clickChannel).channel);
+									n.note.playSound(true);
 									selectedNote = n;
 									selectedNoteChannel = clickChannel;
 								}
@@ -163,7 +213,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 				} else {
 					if(e.getButton() == MouseEvent.BUTTON1) {
 						// If there isn't, play the note, add it to channel
-						newNote.playSound(channels.get(clickChannel).channel);
+						newNote.playSound(true);
 						channels.get(clickChannel).notes.add(newEdNote);
 						if(newNote.equals(selectedNote) && clickChannel == selectedNoteChannel) {
 							selectedNote = null;
@@ -202,14 +252,13 @@ public class GBATrackerSimulationPanel extends JPanel {
 	 * @param note
 	 */
 	public void updateSelectedNote(Note newNote) {
-		System.out.println("Test");
 		if(selectedNote != null) {
 			EditorChannel ch = channels.get(selectedNoteChannel);
 			for(EditorNote n : ch.notes) {
 				if(n.equals(selectedNote)) {
 					if(n.note.isSquareType == newNote.isSquareType) {
 						n.note = newNote;
-						newNote.playSound(channels.get(selectedNoteChannel).channel);
+						newNote.playSound(true);
 					}
 				}
 			}
@@ -221,21 +270,41 @@ public class GBATrackerSimulationPanel extends JPanel {
 	 * Play the file from the start
 	 */
 	public void play() {
-		// TODO
+		if(!simulating) {
+			controller.setTooltipText("Rendering notes...");
+			for(int i = 0; i < 3; ++i) {
+				for(EditorNote edn : channels.get(i).notes) {
+					edn.note.prepareBuf(i != 1);
+				}
+			}
+			controller.setTooltipText(" ");
+			playingStep = 0;
+			simulating = true;
+			simulationTimer = new Timer(5000 / getBPM(), simulationListener);
+			simulationTimer.start();
+		}
 	}
 	
 	/**
 	 * Play the file from an offset
 	 */
 	public void playHere() {
-		// TODO
+		if(!simulating) {
+			playingStep = (int) Math.ceil(scroll);
+			simulating = true;
+			simulationTimer = new Timer(5000 / getBPM(), simulationListener);
+			simulationTimer.start();
+		}
 	}
 	
 	/**
 	 * Stop playing the file
 	 */
 	public void stop() {
-		// TODO
+		if(simulating) {
+			simulating = false;
+			simulationTimer.stop();
+		}
 	}
 	
 	/**
@@ -434,9 +503,9 @@ public class GBATrackerSimulationPanel extends JPanel {
 		
 		// New channels
 		List<EditorChannel> newChannels = new ArrayList<>();
-		newChannels.add(new EditorChannel(true));
-		newChannels.add(new EditorChannel(false));
-		newChannels.add(new EditorChannel(true));
+		newChannels.add(new EditorChannel());
+		newChannels.add(new EditorChannel());
+		newChannels.add(new EditorChannel());
 		
 		// Fail gracefully on parse error
 		try {
@@ -516,14 +585,13 @@ public class GBATrackerSimulationPanel extends JPanel {
 		
 		/** The variables held by the EditorChannel object */
 		public List<EditorNote> notes = new ArrayList<>();
-		public Channel channel;
+		public Channel channel = new Channel();
 		
 		/**
 		 * Create a new EditorChannel object
 		 * @param channelHasSweep Used for preventing sweep on channel 2
 		 */
-		public EditorChannel(boolean channelHasSweep) {
-			channel = new Channel(channelHasSweep);
+		public EditorChannel() {
 		}
 	}
 }

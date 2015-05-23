@@ -1,6 +1,7 @@
+import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
 
 /**
  * This class represents a single channel for playing sounds
@@ -9,9 +10,11 @@ import javax.sound.sampled.LineUnavailableException;
  */
 public class Channel {
 	
-	/** The Clips used for playing sounds */
-	public Clip lastClip;
-	public Clip currClip;
+	/** Definitions */
+	private static final AudioFormat PlayerFormat = new AudioFormat(48000, 8, 1, true, true);
+	
+	/** The SourceDataLine used for playing sounds */
+	public SourceDataLine line;
 	
 	/** Whether or not sweeping is allowed on this channel */
 	public boolean hasSweep;
@@ -19,10 +22,10 @@ public class Channel {
 	/**
 	 * Construct a new Channel object
 	 */
-	public Channel(boolean hasSweep) {
-		this.hasSweep = hasSweep;
+	public Channel() {
 		try {
-			currClip = AudioSystem.getClip();
+			line = AudioSystem.getSourceDataLine(PlayerFormat);
+			line.open();
 		} catch (LineUnavailableException e) {
 			e.printStackTrace();
 		}

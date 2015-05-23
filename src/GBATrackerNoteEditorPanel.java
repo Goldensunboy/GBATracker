@@ -210,7 +210,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		editorPropertiesPanel.add(viewPanel);
 		
 		// Clean up
-		editorPropertiesPanel.add(Box.createRigidArea(new Dimension(220, 107)));
+		editorPropertiesPanel.add(Box.createRigidArea(new Dimension(220, 103)));
 		notePropertiesPanel.add(editorPropertiesPanel);
 		add(notePropertiesPanel);
 	}

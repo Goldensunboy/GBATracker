@@ -56,7 +56,7 @@ public class GBATrackerControlPanel extends JPanel {
 		exportButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				controller.loadFile();
+				controller.exportFile();
 			}
 		});
 		exportButton.addMouseListener(new MessageMouseListener(controller, "Export song to C file"));

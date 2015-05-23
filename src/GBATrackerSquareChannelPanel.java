@@ -195,7 +195,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Note note = createNote();
-				note.testSound();
+				note.playSound(true);
 				controller.setTooltipText(note.toString());
 			}
 		});

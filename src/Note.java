@@ -3,6 +3,7 @@ import java.util.Random;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
 
 /**
  * This class represents the properties of a note
@@ -16,9 +17,13 @@ public class Note {
 		8013, 7566, 7144, 6742, 6362, 6005, 5666, 5346, 5048, 4766, 4499, 4246
 	};
 	
+	/** Vars used for playing sounds */
+	private static Channel testChannel = new Channel();
+	
 	/** Used for noise generation */
 	private static Random rand = new Random(0); // deterministic
 	private static boolean rands[] = new boolean[0x7FFF];
+	private byte[] buf = new byte[3 * 48000];
 	
 	/** Global parameters */
 	public boolean isSquareType;
@@ -101,20 +106,9 @@ public class Note {
 	}
 	
 	/**
-	 * Test the note sound using the test channel
+	 * Populate the sound buffer
 	 */
-	static Channel testChannel = new Channel(true);
-	void testSound() {
-		playSound(testChannel);
-	}
-	
-	/**
-	 * Test the note sound
-	 */
-	void playSound(Channel channel) {
-		
-		// Buffer where generated samples will be stored
-		byte[] buf = new byte[5 * 48000];
+	void prepareBuf(boolean hasSweep) {
 		
 		// Differentiate between square or noise notes
 		if(isSquareType) {
@@ -130,7 +124,7 @@ public class Note {
 			for(int i = 0; i < buf.length; ++i) {
 				
 				// Adjust frequency if sweeping
-				if(channel.hasSweep && i > 0 && sweepStep > 0 && i % (sweepStep * 375) == 0) {
+				if(hasSweep && i > 0 && sweepStep > 0 && i % (sweepStep * 375) == 0) {
 					double n = 2048 - 131072 / freq;
 					double delta = n / Math.pow(2, sweepRate);
 					n = increasingSweep ? n + delta : n - delta;
@@ -215,20 +209,33 @@ public class Note {
 				}
 			}
 		}
-		
-		// Play the buffer
-		channel.currClip.stop();
-		channel.lastClip = channel.currClip;
-		try {
-			channel.currClip = AudioSystem.getClip();
-			channel.currClip.open(new AudioFormat(48000, 8, 1, true, true), buf, 0, buf.length);
-		} catch (LineUnavailableException e) {
-			e.printStackTrace();
-		}
-		channel.currClip.start();
-		
-		// Clean up any previously playing sound
-		new CancelSound(channel).start();
+	}
+	
+	/**
+	 * Play the sound buffer
+	 */
+	void playBuf(final Channel channel) {
+		new Thread() {
+			@Override
+			public void run() {
+				try {
+					channel.line.close();
+					channel.line.open();
+					channel.line.write(buf, 0, buf.length);
+				} catch (LineUnavailableException e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
+	}
+	
+	/**
+	 * Utility function for preparing and playing the buffer
+	 * @param hasSweep
+	 */
+	void playSound(boolean hasSweep) {
+		prepareBuf(hasSweep);
+		playBuf(testChannel);
 	}
 	
 	/**
@@ -282,39 +289,6 @@ public class Note {
 			return String.format("SWP: 0x%04X  ENV: 0x%04X  FRQ: 0x%04X", SWP, ENV, FRQ);
 		} else {
 			return String.format("ENV: 0x%04X  FRQ: 0x%04X", ENV, FRQ);
-		}
-	}
-	
-	/**
-	 * This inner class is used to cancel sounds asynchronously because of
-	 * problems with Clip not canceling properly, causing UI to hang sometimes
-	 * @author Andrew Wilder
-	 */
-	private class CancelSound extends Thread {
-		
-		/** The channel representing the sound to cancel */
-		Channel channel;
-		
-		/**
-		 * Construct a new CancelSound thread object
-		 * @param channel
-		 */
-		public CancelSound(Channel channel) {
-			this.channel = channel;
-		}
-		
-		/**
-		 * Cancel the sound playing on the channel
-		 */
-		@Override
-		public void run() {
-			channel.lastClip.flush();
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			channel.lastClip.close();
 		}
 	}
 }
