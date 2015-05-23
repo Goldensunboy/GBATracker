@@ -1,7 +1,13 @@
 import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -14,13 +20,35 @@ import javax.swing.JPanel;
 @SuppressWarnings("serial")
 public class GBATrackerControlPanel extends JPanel {
 	
+	/** These are the icons used by the control panel */
+	private static Icon loadIcon, saveIcon, saveAsIcon, exportIcon, playIcon, playHereIcon, stopIcon, aboutIcon;
+	static {
+		try {
+			loadIcon     = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/Open.png")));
+			saveIcon     = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/Save.png")));
+			saveAsIcon   = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/SaveAs.png")));
+			exportIcon   = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/Export.png")));
+			playIcon     = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/Play.png")));
+			playHereIcon = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/PlayHere.png")));
+			stopIcon     = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/Stop.png")));
+			aboutIcon    = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/About.png")));
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Create the UI for the control panel
+	 * @param controller
+	 */
 	public GBATrackerControlPanel(final GBATrackerFrame controller) {
 		
 		// Initialize JPanel related properties
 		super(new FlowLayout(FlowLayout.LEADING));
 		
 		// Load button
-		JButton loadButton = new JButton("Load");
+		JButton loadButton = new JButton(loadIcon);
+		loadButton.setMargin(new Insets(0, 0, 0, 0));
 		loadButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -31,7 +59,8 @@ public class GBATrackerControlPanel extends JPanel {
 		add(loadButton);
 		
 		// Save button
-		JButton saveButton = new JButton("Save");
+		JButton saveButton = new JButton(saveIcon);
+		saveButton.setMargin(new Insets(0, 0, 0, 0));
 		saveButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -42,7 +71,8 @@ public class GBATrackerControlPanel extends JPanel {
 		add(saveButton);
 
 		// Save as button
-		JButton saveAsButton = new JButton("Save as");
+		JButton saveAsButton = new JButton(saveAsIcon);
+		saveAsButton.setMargin(new Insets(0, 0, 0, 0));
 		saveAsButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -53,7 +83,8 @@ public class GBATrackerControlPanel extends JPanel {
 		add(saveAsButton);
 		
 		// Export button
-		JButton exportButton = new JButton("Export");
+		JButton exportButton = new JButton(exportIcon);
+		exportButton.setMargin(new Insets(0, 0, 0, 0));
 		exportButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -66,7 +97,8 @@ public class GBATrackerControlPanel extends JPanel {
 		add(new JLabel(" - "));
 		
 		// Play from start button
-		JButton playButton = new JButton("Play");
+		JButton playButton = new JButton(playIcon);
+		playButton.setMargin(new Insets(0, 0, 0, 0));
 		playButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -77,18 +109,20 @@ public class GBATrackerControlPanel extends JPanel {
 		add(playButton);
 		
 		// Play from here button
-		JButton playHereButton = new JButton("Play here");
+		JButton playHereButton = new JButton(playHereIcon);
+		playHereButton.setMargin(new Insets(0, 0, 0, 0));
 		playHereButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				controller.playHere();
 			}
 		});
-		playHereButton.addMouseListener(new MessageMouseListener(controller, "Play from here"));
+		playHereButton.addMouseListener(new MessageMouseListener(controller, "Play from this measure"));
 		add(playHereButton);
 		
 		// Play from here button
-		JButton stopButton = new JButton("Stop");
+		JButton stopButton = new JButton(stopIcon);
+		stopButton.setMargin(new Insets(0, 0, 0, 0));
 		stopButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -100,11 +134,13 @@ public class GBATrackerControlPanel extends JPanel {
 		
 		add(new JLabel(" - "));
 		
-		JButton aboutButton = new JButton("About");
+		JButton aboutButton = new JButton(aboutIcon);
+		aboutButton.setMargin(new Insets(0, 0, 0, 0));
 		aboutButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(null, "GBA Tracker 1.0\nBy Andrew Wilder\nandrew.m.wilder@gmail.com", "About", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(null, "GBA Tracker 1.0\nBy Andrew Wilder\nandrew.m.wilder@gmail.com\nhttps://github.com/Goldensunboy/GBATracker",
+						"About", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 		aboutButton.addMouseListener(new MessageMouseListener(controller, "About this program"));
