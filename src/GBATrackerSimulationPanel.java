@@ -109,6 +109,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 				if(simPanel.looping) {
 					simPanel.playingStep = simPanel.loopStep;
 				} else {
+					simPanel.simulating = false;
 					simPanel.simulationTimer.stop();
 				}
 			}
@@ -122,13 +123,13 @@ public class GBATrackerSimulationPanel extends JPanel {
 			
 			// Move the arrow
 			simPanel.playSlider = (simPanel.playingStep + (double) elapsedMS / (5000 / simPanel.controller.getBPM())) / 48;
-			simPanel.repaint();
 			
 			// Play a note
 			if((elapsedMS += 1000 / FRAMERATE) > 5000 / simPanel.controller.getBPM()) {
 				elapsedMS %= 5000 / simPanel.controller.getBPM();
 				playNote();
 			}
+			simPanel.repaint();
 		}
 	};
 	private Timer simulationTimer = null;
@@ -227,7 +228,6 @@ public class GBATrackerSimulationPanel extends JPanel {
 								if(n.equals(selectedNote) && clickChannel == selectedNoteChannel) {
 									selectedNote = null;
 								} else {
-									n.note.playSound(true);
 									selectedNote = n;
 									selectedNoteChannel = clickChannel;
 								}
@@ -247,9 +247,6 @@ public class GBATrackerSimulationPanel extends JPanel {
 						channels.get(clickChannel).notes.add(newEdNote);
 						if(newNote.equals(selectedNote) && clickChannel == selectedNoteChannel) {
 							selectedNote = null;
-						} else {
-							selectedNote = newEdNote;
-							selectedNoteChannel = clickChannel;
 						}
 					}
 				}
@@ -294,6 +291,22 @@ public class GBATrackerSimulationPanel extends JPanel {
 			}
 			repaint();
 		}
+	}
+	
+	/**
+	 * Get the length of the song, in steps
+	 * @return The number of 48ths in this song
+	 */
+	public int getLength() {
+		return endStep;
+	}
+	
+	/**
+	 * Get the start of the song's loop
+	 * @return The step on which the song loops
+	 */
+	public int getLoop() {
+		return loopStep;
 	}
 	
 	/**
@@ -595,6 +608,44 @@ public class GBATrackerSimulationPanel extends JPanel {
 		} finally {
 			sc.close();
 		}
+	}
+	
+	/**
+	 * Generate formatted note data for exporting
+	 * @return The C array for the note data
+	 */
+	public String getNoteData() {
+		String dataStr = "";
+		for(int i = 0; i < endStep; ++i) {
+			String lineStr = "{";
+			EditorNote edn = new EditorNote(null, i);
+			Note n = null;
+			for(EditorNote edn_itr : channels.get(0).notes) {
+				if(edn.equals(edn_itr)) {
+					n = edn_itr.note;
+					break;
+				}
+			}
+			lineStr += n == null ? "0x0000,0x0000,0x0000," : String.format("0x%04X,0x%04X,0x%04X,", n.getSWP(), n.getENV(), n.getFRQ());
+			n = null;
+			for(EditorNote edn_itr : channels.get(1).notes) {
+				if(edn.equals(edn_itr)) {
+					n = edn_itr.note;
+					break;
+				}
+			}
+			lineStr += n == null ? "0x0000,0x0000," : String.format("0x%04X,0x%04X,", n.getENV(), n.getFRQ());
+			n = null;
+			for(EditorNote edn_itr : channels.get(2).notes) {
+				if(edn.equals(edn_itr)) {
+					n = edn_itr.note;
+					break;
+				}
+			}
+			lineStr += n == null ? "0x0000,0x0000}," : String.format("0x%04X,0x%04X},", n.getENV(), n.getFRQ());
+			dataStr += "\t" + lineStr + "\n";
+		}
+		return dataStr;
 	}
 	
 	/**

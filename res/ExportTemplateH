@@ -1,0 +1,8 @@
+/*
+ * $SONGTITLE
+ * Exported from $FILENAME by $APPTITLE
+ * $DATE
+ */
+
+void $SONGTITLE_play();
+void $SONGTITLE_stop();

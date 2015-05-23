@@ -1,6 +1,8 @@
 import java.awt.FlowLayout;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Scanner;
@@ -158,27 +160,46 @@ public class GBATrackerFrame extends JFrame {
 		
 	    int returnVal = chooser.showSaveDialog(this);
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {
-	    	File outFileC = new File(chooser.getSelectedFile(), songTitle + ".c");
-	    	File outFileH = new File(chooser.getSelectedFile(), songTitle + ".h");
-	    	Scanner sc = new Scanner(GBATrackerFrame.class.getResourceAsStream("res/ExportTemplateC"), "UTF-8").useDelimiter("\\A");
+	    	
+	    	// Read the templates
+    		InputStream is = GBATrackerFrame.class.getResourceAsStream("res/ExportTemplateC");
+	    	Scanner sc = new Scanner(is, "UTF-8");
+	    	sc.useDelimiter("\\A");
 	    	String textC = sc.next();
 	    	sc.close();
+	    	is = GBATrackerFrame.class.getResourceAsStream("res/ExportTemplateH");
+	    	sc = new Scanner(is, "UTF-8");
+	    	sc.useDelimiter("\\A");
+	    	String textH = sc.next();
+	    	sc.close();
+	    	
+	    	// Text substitution in the templates
 	    	textC = textC.replaceAll("\\$SONGTITLE", songTitle);
 	    	textC = textC.replaceAll("\\$FILENAME", openFile == null ? "(blank)" : openFile.getName());
 	    	textC = textC.replaceAll("\\$APPTITLE", APPLICATION_TITLE);
 	    	textC = textC.replaceAll("\\$DATE", new Date().toString());
 	    	textC = textC.replaceAll("\\$BPM", noteEditorPanel.getBPM());
-	    	textC = textC.replaceAll("\\$LENGTH", "\tTODO");
-	    	textC = textC.replaceAll("\\$NOTEDATA", "\tTODO");
-	    	textC = textC.replaceAll("\\$LOOP", "\tTODO");
-	    	sc = new Scanner(GBATrackerFrame.class.getResourceAsStream("res/ExportTemplateH"), "UTF-8").useDelimiter("\\A");
-	    	String textH = sc.next();
+	    	textC = textC.replaceAll("\\$LENGTH", "" + simulationPanel.getLength());
+	    	textC = textC.replaceAll("\\$NOTEDATA", "" + simulationPanel.getNoteData());
+	    	textC = textC.replaceAll("\\$LOOP", "" + simulationPanel.getLoop());
 	    	textH = textH.replaceAll("\\$SONGTITLE", songTitle);
 	    	textH = textH.replaceAll("\\$FILENAME", openFile == null ? "(blank)" : openFile.getName());
 	    	textH = textH.replaceAll("\\$APPTITLE", APPLICATION_TITLE);
 	    	textH = textH.replaceAll("\\$DATE", new Date().toString());
-	    	sc.close();
-	    	System.out.println(textH);
+	    	
+	    	// Write output files
+	    	File outFileC = new File(chooser.getSelectedFile(), songTitle + ".c");
+	    	File outFileH = new File(chooser.getSelectedFile(), songTitle + ".h");
+	    	try {
+				PrintWriter pw = new PrintWriter(outFileC);
+				pw.write(textC);
+				pw.close();
+				pw = new PrintWriter(outFileH);
+				pw.write(textH);
+				pw.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
 	    }
 	}
 	
