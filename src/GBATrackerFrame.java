@@ -1,4 +1,6 @@
 import java.awt.FlowLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -368,7 +370,19 @@ public class GBATrackerFrame extends JFrame {
 		
 		// Initialize JFrame related properties
 		super("untitled - " + APPLICATION_TITLE);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+	    addWindowListener(new WindowAdapter() {
+	        @Override
+	        public void windowClosing(WindowEvent event) {
+	            if(modification) {
+	            	if(JOptionPane.showConfirmDialog(GBATrackerFrame.this, "You have unsaved changes.\nExit " + APPLICATION_TITLE + " anyway?",
+	    					"Are you sure?", JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_CANCEL_OPTION) {
+	    				return;
+	    			}
+	            }
+	            System.exit(0);
+	        }
+	    });
 		JPanel content = new JPanel();
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 		
