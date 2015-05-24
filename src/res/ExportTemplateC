@@ -103,7 +103,7 @@ void $SONGTITLE_stop() {
 // Play one 48th of a measure of music
 static void $SONGTITLE_step() {
 	REG_IME = 0;
-
+	int halt = 0;
 	switch(REG_IF) {
 	case IRQ_TIMER(0) :
 
@@ -128,7 +128,11 @@ static void $SONGTITLE_step() {
 			wait = sound_data[index].LEN;
 	
 			if(++index == $LENGTH) {
-				index = $LOOP;
+				if($ALLOWLOOPING) {
+					index = $LOOP;
+				} else {
+					halt = 1;
+				}
 			}
 		}
 
@@ -138,7 +142,9 @@ static void $SONGTITLE_step() {
 	}
 
 	REG_IF = REG_IF;
-	REG_IME = IRQ_ENABLE;
+	if(!halt) {
+		REG_IME = IRQ_ENABLE;
+	}
 }
 
 // Note data

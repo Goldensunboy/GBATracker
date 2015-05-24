@@ -9,3 +9,6 @@ Click on the green arrow button to play from measure 0.
 Click on the blue arrow button to play from the first currently visible measure.
 Use the scroll wheel to more conveniently navigate the simulation area.
 The song's name must be a valid C identifier to save or export it.
+Remember that only the first channel can sweep its pitch.
+You can make kick sounds by quickly sweeping channel 1 notes down.
+You can make cutoffs longer than 250 ms by placing a silent note after the note to cut off.
