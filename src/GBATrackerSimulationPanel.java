@@ -341,8 +341,15 @@ public class GBATrackerSimulationPanel extends JPanel {
 	 * Get the length of the song, in steps
 	 * @return The number of 48ths in this song
 	 */
-	public int getLength() {
-		return endStep;
+	public int getDataLength() {
+		int lineCount = 0;
+		for(int i = 0; i < endStep; ++i) {
+			EditorNote edn = new EditorNote(null, i);
+			if(channels.get(0).notes.contains(edn) || channels.get(1).notes.contains(edn) || channels.get(2).notes.contains(edn)) {
+				++lineCount;
+			}
+		}
+		return lineCount;
 	}
 	
 	/**
@@ -663,9 +670,10 @@ public class GBATrackerSimulationPanel extends JPanel {
 	 * @return The C array for the note data
 	 */
 	public String getNoteData() {
-		String dataStr = "";
+		
+		// Get the uncompressed data
+		int dataVals[] = new int[endStep << 3];
 		for(int i = 0; i < endStep; ++i) {
-			String lineStr = "{";
 			EditorNote edn = new EditorNote(null, i);
 			Note n = null;
 			for(EditorNote edn_itr : channels.get(0).notes) {
@@ -674,7 +682,13 @@ public class GBATrackerSimulationPanel extends JPanel {
 					break;
 				}
 			}
-			lineStr += n == null ? "0x0000,0x0000,0x0000," : String.format("0x%04X,0x%04X,0x%04X,", n.getSWP(), n.getENV(), n.getFRQ());
+			if(n != null) {
+				dataVals[i << 3] = n.getSWP();
+				dataVals[(i << 3) + 1] = n.getENV();
+				dataVals[(i << 3) + 2] = n.getFRQ();
+			} else {
+				dataVals[i << 3] = dataVals[(i << 3) + 1] = dataVals[(i << 3) + 2] = 0;
+			}
 			n = null;
 			for(EditorNote edn_itr : channels.get(1).notes) {
 				if(edn.equals(edn_itr)) {
@@ -682,7 +696,12 @@ public class GBATrackerSimulationPanel extends JPanel {
 					break;
 				}
 			}
-			lineStr += n == null ? "0x0000,0x0000," : String.format("0x%04X,0x%04X,", n.getENV(), n.getFRQ());
+			if(n != null) {
+				dataVals[(i << 3) + 3] = n.getENV();
+				dataVals[(i << 3) + 4] = n.getFRQ();
+			} else {
+				dataVals[(i << 3) + 3] = dataVals[(i << 3) + 4] = 0;
+			}
 			n = null;
 			for(EditorNote edn_itr : channels.get(2).notes) {
 				if(edn.equals(edn_itr)) {
@@ -690,8 +709,42 @@ public class GBATrackerSimulationPanel extends JPanel {
 					break;
 				}
 			}
-			lineStr += n == null ? "0x0000,0x0000}," : String.format("0x%04X,0x%04X},", n.getENV(), n.getFRQ());
-			dataStr += "\t" + lineStr + (i < endStep - 1 ? "\n" : "");
+			if(n != null) {
+				dataVals[(i << 3) + 5] = n.getENV();
+				dataVals[(i << 3) + 6] = n.getFRQ();
+			} else {
+				dataVals[(i << 3) + 5] = dataVals[(i << 3) + 6] = 0;
+			}
+			dataVals[(i << 3) + 7] = 1;
+		}
+		
+		// Compress lines by calculating RLE lengths
+		for(int i = 0, currIndex = 0; i < endStep; ++i) {
+			if(dataVals[(i << 3) + 2] != 0 || dataVals[(i << 3) + 4] != 0 || dataVals[(i << 3) + 6] != 0) {
+				currIndex = i;
+			} else {
+				++dataVals[(currIndex << 3) + 7];
+			}
+		}
+		
+		// Create data string
+		int dataLen = getDataLength();
+		int currLine = 0;
+		String dataStr = "";
+		for(int i = 0; i < endStep; ++i) {
+			if(dataVals[(i << 3) + 2] != 0 || dataVals[(i << 3) + 4] != 0 || dataVals[(i << 3) + 6] != 0) {
+				String dataLine = "";
+				for(int j = 0; j < 8; ++j) {
+					dataLine += String.format("0x%04X", dataVals[(i << 3) + j]);
+					if(j < 7) {
+						dataLine += ",";
+					}
+				}
+				dataStr += "\t{" + dataLine + "}";
+				if(currLine++ < dataLen - 1) {
+					dataStr += ",\n";
+				}
+			}
 		}
 		return dataStr;
 	}

@@ -59,6 +59,7 @@ typedef struct {
 	unsigned short CH2_FRQ;
 	unsigned short CH4_ENV;
 	unsigned short CH4_FRQ;
+	unsigned short LEN;
 } note_t;
 
 static void $SONGTITLE_step();
@@ -66,7 +67,7 @@ static void $SONGTITLE_step();
 
 const note_t sound_data[$LENGTH];
 void printNote(const note_t *n, int index);
-int index;
+int index, wait;
 
 // Begin playing the music
 void $SONGTITLE_play() {
@@ -89,6 +90,7 @@ void $SONGTITLE_play() {
 	                RIGHT_VOL(7);
 
 	index = 0;
+	wait = 1;
 	
 	REG_IME = IRQ_ENABLE;
 }
@@ -105,24 +107,29 @@ static void $SONGTITLE_step() {
 	switch(REG_IF) {
 	case IRQ_TIMER(0) :
 
-		if(sound_data[index].CH1_FRQ) {
-			REG_SND1SWP = sound_data[index].CH1_SWP;
-			REG_SND1ENV = sound_data[index].CH1_ENV;
-			REG_SND1FRQ = sound_data[index].CH1_FRQ;
-		}
+		if(!--wait) {
 
-		if(sound_data[index].CH2_FRQ) {
-			REG_SND2ENV = sound_data[index].CH2_ENV;
-			REG_SND2FRQ = sound_data[index].CH2_FRQ;
-		}
-
-		if(sound_data[index].CH4_FRQ) {
-			REG_SND4ENV = sound_data[index].CH4_ENV;
-			REG_SND4FRQ = sound_data[index].CH4_FRQ;
-		}
-
-		if(++index == $LENGTH) {
-			index = $LOOP;
+			if(sound_data[index].CH1_FRQ) {
+				REG_SND1SWP = sound_data[index].CH1_SWP;
+				REG_SND1ENV = sound_data[index].CH1_ENV;
+				REG_SND1FRQ = sound_data[index].CH1_FRQ;
+			}
+	
+			if(sound_data[index].CH2_FRQ) {
+				REG_SND2ENV = sound_data[index].CH2_ENV;
+				REG_SND2FRQ = sound_data[index].CH2_FRQ;
+			}
+	
+			if(sound_data[index].CH4_FRQ) {
+				REG_SND4ENV = sound_data[index].CH4_ENV;
+				REG_SND4FRQ = sound_data[index].CH4_FRQ;
+			}
+			
+			wait = sound_data[index].LEN;
+	
+			if(++index == $LENGTH) {
+				index = $LOOP;
+			}
 		}
 
 		break;
