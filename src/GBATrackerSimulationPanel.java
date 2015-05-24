@@ -378,7 +378,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 			// Start playing
 			playingStep = 0;
 			startScroll = scroll;
-			scroll = MIN_SCROLL;
+			scroll = -0.1;
 			simulating = true;
 			simulationTimer = new Timer(1000 / FRAMERATE, new SimulationListener(this));
 			simulationTimer.start();

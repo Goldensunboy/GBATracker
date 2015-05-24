@@ -28,6 +28,7 @@ public class GBATrackerFrame extends JFrame {
 	/** Definitions */
 	private static final String APPLICATION_TITLE = "GBA Tracker";
 	private static final String FILE_EXTENSION = "gbt";
+	private static final String VERSION = "1.0.1";
 	
 	/** Panels used by the application */
 	private GBATrackerControlPanel controlPanel;
@@ -434,7 +435,7 @@ public class GBATrackerFrame extends JFrame {
 	 * Show some information about this application
 	 */
 	public void about() {
-		JOptionPane.showMessageDialog(null, "GBA Tracker 1.0\nBy Andrew Wilder\nandrew.m.wilder@gmail.com\nhttps://github.com/Goldensunboy/GBATracker",
+		JOptionPane.showMessageDialog(null, "GBA Tracker " + VERSION + "\nBy Andrew Wilder\nandrew.m.wilder@gmail.com\nhttps://github.com/Goldensunboy/GBATracker",
 				"About", JOptionPane.INFORMATION_MESSAGE);
 	}
 	
