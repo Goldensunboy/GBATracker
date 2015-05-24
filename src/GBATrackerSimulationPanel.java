@@ -52,6 +52,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 	private int loopStep = 0;
 	private boolean looping = true;
 	private int playingStep = 0;
+	private double startScroll = 0;
 	
 	/**
 	 * Get the maximum step for the notes currently placed
@@ -89,6 +90,8 @@ public class GBATrackerSimulationPanel extends JPanel {
 		 * Play a note of music
 		 */
 		private void playNote() {
+			
+			// Get the notes to play
 			EditorNote edn = new EditorNote(null, simPanel.playingStep);
 			Note[] playNotes = {null, null, null};
 			for(int i = 0; i < 3; ++i) {
@@ -103,15 +106,27 @@ public class GBATrackerSimulationPanel extends JPanel {
 					}
 				}
 			}
+			
+			// Play available notes
 			for(int i = 0; i < 3; ++i) {
 				if(playNotes[i] != null) {
 					playNotes[i].playBuf(simPanel.channels.get(i).channel);
 				}
 			}
+			
+			// Move the playing step
 			if(++simPanel.playingStep >= simPanel.endStep) {
+				
+				// If we've reached the end of playback...
 				if(simPanel.looping) {
+					
+					// If looping, set play step to loop marker and scroll back to it
 					simPanel.playingStep = simPanel.loopStep;
+					simPanel.scroll = simPanel.playingStep / 48.0 - 0.1;
 				} else {
+					
+					// If not looping, reset scroll and stop simulating
+					simPanel.scroll = simPanel.startScroll;
 					simPanel.simulating = false;
 					simPanel.simulationTimer.stop();
 				}
@@ -119,13 +134,18 @@ public class GBATrackerSimulationPanel extends JPanel {
 		}
 		
 		/**
-		 * Update graphics, nad play a note at appropriate times
+		 * Update graphics, and play a note at appropriate times
 		 */
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			
 			// Move the arrow
 			simPanel.playSlider = (simPanel.playingStep + (double) elapsedMS / (5000 / simPanel.controller.getBPM())) / 48;
+			
+			// Scroll the screen
+			if((simPanel.playSlider - simPanel.scroll) * simPanel.getWidth() * simPanel.zoom > simPanel.getWidth()) {
+				simPanel.scroll += 1 / simPanel.zoom;
+			}
 			
 			// Play a note
 			if((elapsedMS += 1000 / FRAMERATE) > 5000 / simPanel.controller.getBPM()) {
@@ -143,6 +163,16 @@ public class GBATrackerSimulationPanel extends JPanel {
 	private final GBATrackerFrame controller;
 	public int getBPM() {
 		return controller.getBPM();
+	}
+	
+	/**
+	 * Clear all the notes
+	 */
+	public void clearAll() {
+		for(int i = 0; i < 3; ++i) {
+			channels.get(i).notes.clear();
+		}
+		repaint();
 	}
 	
 	/**
@@ -170,7 +200,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 			public void mousePressed(MouseEvent e) {
 
 				// Do nothing while simulating
-				if(simulating) {
+				if(simulating || e.getButton() == 4 || e.getButton() == 5) {
 					return;
 				}
 				
@@ -340,6 +370,8 @@ public class GBATrackerSimulationPanel extends JPanel {
 			
 			// Start playing
 			playingStep = 0;
+			startScroll = scroll;
+			scroll = MIN_SCROLL;
 			simulating = true;
 			simulationTimer = new Timer(1000 / FRAMERATE, new SimulationListener(this));
 			simulationTimer.start();
@@ -362,7 +394,8 @@ public class GBATrackerSimulationPanel extends JPanel {
 			controller.setTooltipText(" ");
 			
 			// Start playing
-			playingStep = (int) Math.ceil(scroll);
+			playingStep = (int) Math.ceil(scroll) * 48;
+			startScroll = scroll;
 			simulating = true;
 			simulationTimer = new Timer(1000 / FRAMERATE, new SimulationListener(this));
 			simulationTimer.start();
@@ -374,6 +407,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 	 */
 	public void stop() {
 		if(simulating) {
+			scroll = startScroll;
 			simulating = false;
 			simulationTimer.stop();
 			repaint();

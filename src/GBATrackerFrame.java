@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -36,6 +37,28 @@ public class GBATrackerFrame extends JFrame {
 	private File openFile = null;
 	private boolean modification = false;
 	private String songTitle = "untitled";
+	private int usageHintNum = 0;
+	private static ArrayList<String> usageHints = new ArrayList<>();
+	
+	// Initialize the usage hints
+	static {
+		InputStream is = GBATrackerFrame.class.getResourceAsStream("res/UsageHints");
+    	Scanner sc = new Scanner(is, "UTF-8");
+    	while(sc.hasNext()) {
+    		usageHints.add(sc.nextLine());
+    	}
+    	sc.close();
+	}
+	
+	/**
+	 * Display the next usage hint
+	 */
+	public void displayNextUsageHint() {
+		setTooltipText(usageHints.get(usageHintNum));
+		if(++usageHintNum == usageHints.size()) {
+			usageHintNum = 0;
+		}
+	}
 	
 	/**
 	 * Warn the user if they make an error
@@ -43,6 +66,14 @@ public class GBATrackerFrame extends JFrame {
 	 */
 	private void warningMessage(String msg) {
 		JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+	}
+	
+	/**
+	 * Validate the BPM value the user input in the editor panel
+	 * @return Whether or not the BPM value is valid
+	 */
+	public boolean validateBPM() {
+		return noteEditorPanel.validateBPM();
 	}
 	
 	/**
@@ -129,6 +160,12 @@ public class GBATrackerFrame extends JFrame {
 			return;
 		}
 		
+		// Must have valid BPM
+		if(!validateBPM()) {
+			warningMessage("BPM is invalid; must be a positive number");
+			return;
+		}
+		
 		// Select a file
 		JFileChooser chooser = new JFileChooser();
 	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
@@ -153,6 +190,12 @@ public class GBATrackerFrame extends JFrame {
 		// Must have valid song name
 		if(!validName(songTitle)) {
 			warningMessage("Song title must be a valid C identifier");
+			return;
+		}
+		
+		// Must have valid BPM
+		if(!validateBPM()) {
+			warningMessage("BPM is invalid; must be a positive number");
 			return;
 		}
 		
@@ -230,6 +273,14 @@ public class GBATrackerFrame extends JFrame {
 	 * Play the file from the start
 	 */
 	public void play() {
+		
+		// Must have valid BPM
+		if(!validateBPM()) {
+			warningMessage("BPM is invalid; must be a positive number");
+			return;
+		}
+		
+		// Play simulation
 		simulationPanel.play();
 	}
 	
@@ -237,6 +288,14 @@ public class GBATrackerFrame extends JFrame {
 	 * Play the file from an offset
 	 */
 	public void playHere() {
+		
+		// Must have valid BPM
+		if(!validateBPM()) {
+			warningMessage("BPM is invalid; must be a positive number");
+			return;
+		}
+		
+		// Play simulation
 		simulationPanel.playHere();
 	}
 	
@@ -364,6 +423,34 @@ public class GBATrackerFrame extends JFrame {
 	}
 	
 	/**
+	 * Clear all the notes in the simulatoin panel
+	 */
+	public void clearAll() {
+		simulationPanel.clearAll();
+	}
+	
+	/**
+	 * Show some information about this application
+	 */
+	public void about() {
+		JOptionPane.showMessageDialog(null, "GBA Tracker 1.0\nBy Andrew Wilder\nandrew.m.wilder@gmail.com\nhttps://github.com/Goldensunboy/GBATracker",
+				"About", JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	/**
+	 * Confirm exit if modification
+	 */
+	public void exitConfirmation() {
+		if(modification) {
+        	if(JOptionPane.showConfirmDialog(GBATrackerFrame.this, "You have unsaved changes.\nExit " + APPLICATION_TITLE + " anyway?",
+					"Are you sure?", JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_CANCEL_OPTION) {
+				return;
+			}
+        }
+        System.exit(0);
+	}
+	
+	/**
 	 * Create an instance of the main program's window
 	 */
 	public GBATrackerFrame() {
@@ -374,17 +461,14 @@ public class GBATrackerFrame extends JFrame {
 	    addWindowListener(new WindowAdapter() {
 	        @Override
 	        public void windowClosing(WindowEvent event) {
-	            if(modification) {
-	            	if(JOptionPane.showConfirmDialog(GBATrackerFrame.this, "You have unsaved changes.\nExit " + APPLICATION_TITLE + " anyway?",
-	    					"Are you sure?", JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_CANCEL_OPTION) {
-	    				return;
-	    			}
-	            }
-	            System.exit(0);
+	            exitConfirmation();
 	        }
 	    });
 		JPanel content = new JPanel();
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+		
+		// Add menu bar
+		setJMenuBar(new GBATrackerMenuBar(this));
 		
 		// Set up the panels
 		controlPanel = new GBATrackerControlPanel(this);

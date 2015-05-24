@@ -2,7 +2,6 @@ import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -10,7 +9,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -21,7 +19,7 @@ import javax.swing.JPanel;
 public class GBATrackerControlPanel extends JPanel {
 	
 	/** These are the icons used by the control panel */
-	private static Icon loadIcon, saveIcon, saveAsIcon, exportIcon, playIcon, playHereIcon, stopIcon, aboutIcon;
+	private static Icon loadIcon, saveIcon, saveAsIcon, exportIcon, playIcon, playHereIcon, stopIcon, aboutIcon, hintIcon;
 	static {
 		try {
 			loadIcon     = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/Open.png")));
@@ -32,6 +30,7 @@ public class GBATrackerControlPanel extends JPanel {
 			playHereIcon = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/PlayHere.png")));
 			stopIcon     = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/Stop.png")));
 			aboutIcon    = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/About.png")));
+			hintIcon     = new ImageIcon(ImageIO.read(ClassLoader.getSystemResource("res/Hint.png")));
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -134,13 +133,23 @@ public class GBATrackerControlPanel extends JPanel {
 		
 		add(new JLabel(" - "));
 		
+		JButton hintButton = new JButton(hintIcon);
+		hintButton.setMargin(new Insets(0, 0, 0, 0));
+		hintButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				controller.displayNextUsageHint();
+			}
+		});
+		hintButton.addMouseListener(new MessageMouseListener(controller, "Display usage hints"));
+		add(hintButton);
+		
 		JButton aboutButton = new JButton(aboutIcon);
 		aboutButton.setMargin(new Insets(0, 0, 0, 0));
 		aboutButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(null, "GBA Tracker 1.0\nBy Andrew Wilder\nandrew.m.wilder@gmail.com\nhttps://github.com/Goldensunboy/GBATracker",
-						"About", JOptionPane.INFORMATION_MESSAGE);
+				controller.about();
 			}
 		});
 		aboutButton.addMouseListener(new MessageMouseListener(controller, "About this program"));

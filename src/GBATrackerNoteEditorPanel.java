@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -72,6 +73,14 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		} else {
 			return noiseChannelPanel.createNote();
 		}
+	}
+	
+	/**
+	 * Validate the BPM value the user input in the editor panel
+	 * @return Whether or not the BPM value is valid
+	 */
+	public boolean validateBPM() {
+		return Pattern.matches("[1-9]\\d*", bpmTextField.getText());
 	}
 	
 	/**
