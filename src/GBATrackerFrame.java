@@ -28,7 +28,7 @@ public class GBATrackerFrame extends JFrame {
 	/** Definitions */
 	private static final String APPLICATION_TITLE = "GBA Tracker";
 	private static final String FILE_EXTENSION = "gbt";
-	private static final String VERSION = "1.0.2";
+	private static final String VERSION = "1.0.3";
 	
 	/** Panels used by the application */
 	private GBATrackerControlPanel controlPanel;
@@ -445,7 +445,7 @@ public class GBATrackerFrame extends JFrame {
 	public void exitConfirmation() {
 		if(modification) {
         	if(JOptionPane.showConfirmDialog(GBATrackerFrame.this, "You have unsaved changes.\nExit " + APPLICATION_TITLE + " anyway?",
-					"Are you sure?", JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_CANCEL_OPTION) {
+					"Are you sure?", JOptionPane.WARNING_MESSAGE) != JOptionPane.OK_OPTION) {
 				return;
 			}
         }
@@ -490,6 +490,7 @@ public class GBATrackerFrame extends JFrame {
 		setContentPane(content);
 		pack();
 		setVisible(true);
+		setLocationRelativeTo(null);
 	}
 	
 	/**

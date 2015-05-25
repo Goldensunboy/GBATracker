@@ -50,6 +50,8 @@ typedef void (*irqptr)(void);
 #define CHAN_EN_L(n)  (1 << ((n) + 7))
 #define CHAN_EN_R(n)  (1 << ((n) + 11))
 
+#define BPM_QUAN_TRANSFORM -(0x14000/$BPM)
+
 // Defines and global variables used by the music handler
 typedef struct {
 	unsigned short CH1_SWP;
@@ -63,11 +65,8 @@ typedef struct {
 } note_t;
 
 static void $SONGTITLE_step();
-#define BPM_QUAN_TRANSFORM -(0x14000/$BPM)
-
-const note_t sound_data[$LENGTH];
-void printNote(const note_t *n, int index);
-int index, wait;
+static const note_t sound_data[$LENGTH];
+static int index, wait;
 
 // Begin playing the music
 void $SONGTITLE_play() {
@@ -98,6 +97,7 @@ void $SONGTITLE_play() {
 // Stop playing the music
 void $SONGTITLE_stop() {
 	REG_IME &= ~IRQ_ENABLE;
+	REG_SNDSTAT &= ~MASTER_SND_EN;
 }
 
 // Play one 48th of a measure of music
@@ -148,6 +148,6 @@ static void $SONGTITLE_step() {
 }
 
 // Note data
-const note_t sound_data[$LENGTH] = {
+static const note_t sound_data[$LENGTH] = {
 $NOTEDATA
 };
