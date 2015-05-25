@@ -139,20 +139,25 @@ public class GBATrackerSimulationPanel extends JPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			
-			// Move the arrow
-			simPanel.playSlider = (simPanel.playingStep + (double) elapsedMS / (5000 / simPanel.controller.getBPM())) / 48;
-			
-			// Scroll the screen
-			if((simPanel.playSlider - simPanel.scroll) * simPanel.getWidth() * simPanel.zoom > simPanel.getWidth()) {
-				simPanel.scroll += 1 / simPanel.zoom;
-			}
-			
-			// Play a note
-			if((elapsedMS += 1000 / FRAMERATE) > 5000 / simPanel.controller.getBPM()) {
-				elapsedMS %= 5000 / simPanel.controller.getBPM();
-				playNote();
-			}
-			simPanel.repaint();
+			// New thread to help keep the timer going the right speed
+			new Thread() {
+				public void run() {
+					// Move the arrow
+					simPanel.playSlider = (simPanel.playingStep + (double) elapsedMS / (5000 / simPanel.controller.getBPM())) / 48;
+					
+					// Scroll the screen
+					if((simPanel.playSlider - simPanel.scroll) * simPanel.getWidth() * simPanel.zoom > simPanel.getWidth()) {
+						simPanel.scroll += 1 / simPanel.zoom;
+					}
+					
+					// Play a note
+					if((elapsedMS += 1000 / FRAMERATE) > 5000 / simPanel.controller.getBPM()) {
+						elapsedMS %= 5000 / simPanel.controller.getBPM();
+						playNote();
+					}
+					simPanel.repaint();
+				}
+			}.start();
 		}
 	};
 	private Timer simulationTimer = null;

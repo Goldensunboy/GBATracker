@@ -7,13 +7,14 @@ import java.util.Random;
 public class Note {
 	
 	/** Constants */
-	private static final double PLAYER_VOLUME = 0.5;
+	private static final double PLAYER_VOLUME = 0.3;
 	private static final int[] NoteFrequencies = {
 		8013, 7566, 7144, 6742, 6362, 6005, 5666, 5346, 5048, 4766, 4499, 4246
 	};
 	
 	/** Vars used for playing sounds */
 	private static Channel testChannel = new Channel();
+	private int[] hash = new int[3];
 	
 	/** Used for noise generation */
 	private static Random rand = new Random(0); // deterministic
@@ -46,6 +47,23 @@ public class Note {
 	 */
 	public Note(boolean isSquareType) {
 		this.isSquareType = isSquareType;
+	}
+	
+	/**
+	 * Update the Note's hash on rendering the buffer
+	 */
+	private void updateHash() {
+		hash[0] = getSWP();
+		hash[1] = getENV();
+		hash[2] = getFRQ();
+	}
+	
+	/**
+	 * Check the hash
+	 * @return true if the Note was unchanged
+	 */
+	private boolean checkHash() {
+		return hash[0] == getSWP() && hash[1] == getENV() && hash[2] == getFRQ();
 	}
 	
 	/**
@@ -104,6 +122,13 @@ public class Note {
 	 * Populate the sound buffer
 	 */
 	void prepareBuf(boolean hasSweep) {
+		
+		// Don't re-render this note if the hash matches
+		if(checkHash()) {
+			return;
+		} else {
+			updateHash();
+		}
 		
 		// Differentiate between square or noise notes
 		if(isSquareType) {
