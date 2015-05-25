@@ -16,16 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.swing.JComponent;
 import javax.swing.Timer;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
 /**
  * The simulation panel for showing the timeline of notes
  * @author Andrew Wilder
  */
 @SuppressWarnings("serial")
-public class GBATrackerSimulationPanel extends JPanel {
+public class GBATrackerSimulationPanel extends JComponent {
 
 	/** Definitions */
 	private static final double MIN_SCROLL = -0.25;
@@ -319,9 +319,9 @@ public class GBATrackerSimulationPanel extends JPanel {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				if(e.getPreciseWheelRotation() < 0) {
-					moveRight();
-				} else {
 					moveLeft();
+				} else {
+					moveRight();
 				}
 			}
 		});
@@ -387,7 +387,9 @@ public class GBATrackerSimulationPanel extends JPanel {
 			// Start playing
 			playingStep = 0;
 			startScroll = scroll;
-			scroll = -0.1;
+			if(scroll > 0) {
+				scroll = -0.1;
+			}
 			simulating = true;
 			simulationTimer = new Timer(1000 / FRAMERATE, new SimulationListener(this));
 			simulationTimer.start();

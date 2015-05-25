@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -334,7 +335,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		 */
 		public void paintComponent(Graphics g) {
 			g.setColor(animationPanel.getBackground());
-			g.fillRect((getWidth() - AnimationPanelSize) >> 1, 0, AnimationPanelSize, AnimationPanelSize);
+			g.fillRect(0, 0, getWidth(), getHeight());
 			g.drawImage(frames[((int) (frame * frames.length) + OFFSET) % frames.length], (getWidth() - AnimationPanelSize) >> 1, 0, AnimationPanelSize, AnimationPanelSize, null);
 		}
 	}
