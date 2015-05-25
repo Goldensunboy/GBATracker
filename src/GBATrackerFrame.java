@@ -30,7 +30,7 @@ public class GBATrackerFrame extends JFrame {
 	/** Definitions */
 	private static final String APPLICATION_TITLE = "GBA Tracker";
 	private static final String FILE_EXTENSION = "gbt";
-	private static final String VERSION = "1.0.4";
+	private static final String VERSION = "1.0.5";
 
 	/** Panels used by the application */
 	private GBATrackerControlPanel controlPanel;
@@ -452,6 +452,14 @@ public class GBATrackerFrame extends JFrame {
 			}
 		}
 		System.exit(0);
+	}
+	
+	/**
+	 * Forward calls for updating animation to the editor panel
+	 * @param animPercentage [0.0 - 1.0)
+	 */
+	public void updateAnimation(double animPercentage) {
+		noteEditorPanel.updateAnimation(animPercentage);
 	}
 
 	/**

@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Scanner;
 
 import javax.swing.Timer;
-import javax.swing.Box;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -38,6 +37,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 	private static final int[] PlaySliderPolygonX = {-8, 8, 0};
 	private static final int[] PlaySliderPolygonY = {0, 0, 8};
 	private static final int FRAMERATE = 60;
+	private static final Dimension SimulationPanelSize = new Dimension(800, 260);
 
 	/** Variables that define the simulation */
 	private double zoom = 0.7;
@@ -156,6 +156,9 @@ public class GBATrackerSimulationPanel extends JPanel {
 						elapsedMS %= 5000 / simPanel.controller.getBPM();
 						playNote();
 					}
+					
+					// Repaint stuff
+					simPanel.controller.updateAnimation((simPanel.playSlider * 4) % 1);
 					simPanel.repaint();
 				}
 			}.start();
@@ -189,7 +192,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 
 		// No actual components, just a rigid area to maintain window size
 		this.controller = controller;
-		add(Box.createRigidArea(new Dimension(800, 260)));
+		setPreferredSize(SimulationPanelSize);
 
 		// Instantiate the channel data
 		channels.add(new EditorChannel()); // Channel 1 (square w/ sweep)

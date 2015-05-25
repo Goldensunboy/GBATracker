@@ -1,14 +1,21 @@
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+
+import java.io.IOException;
+
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -29,6 +36,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	private static final Integer[] Quantizations = {
 		8, 12, 16, 24, 48
 	};
+	private static final int AnimationPanelSize = 103;
 
 	/** Components used by the panel */
 	private JTextField titleTextField;
@@ -37,6 +45,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	private GBATrackerSquareChannelPanel squareChannelPanel;
 	private GBATrackerNoiseChannelPanel noiseChannelPanel;
 	private JCheckBox loopCheckBox;
+	private AnimationPanel animationPanel;
 
 	/**
 	 * Get the title of the song
@@ -237,8 +246,12 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		viewPanel.add(moveRightButton);
 		editorPropertiesPanel.add(viewPanel);
 
+		// Animation panel
+		animationPanel = new AnimationPanel();
+		animationPanel.setPreferredSize(new Dimension(AnimationPanelSize, AnimationPanelSize));
+		editorPropertiesPanel.add(animationPanel);
+
 		// Clean up
-		editorPropertiesPanel.add(Box.createRigidArea(new Dimension(220, 103)));
 		notePropertiesPanel.add(editorPropertiesPanel);
 		add(notePropertiesPanel);
 	}
@@ -275,6 +288,54 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 			JOptionPane.showMessageDialog(this, "Corrupted file", "Unable to parse file", JOptionPane.ERROR_MESSAGE);
 		} finally {
 			sc.close();
+		}
+	}
+	
+	/**
+	 * Update the animation
+	 * @param animPercentage [0.0 - 1.0) percentage of the animation
+	 */
+	public void updateAnimation(double animPercentage) {
+		animationPanel.frame = animPercentage;
+		animationPanel.repaint();
+	}
+
+	/**
+	 * In this panel we will provide a fun little animation
+	 * @author Andrew Wilder
+	 */
+	private class AnimationPanel extends JPanel {
+
+		/** Fields specifying what to draw */
+		private static final int OFFSET = 3;
+		public double frame = 0.2;
+		public BufferedImage frames[];
+
+		/**
+		 * Set up the frames of the image
+		 */
+		public AnimationPanel() {
+			try {
+				ImageReader reader = (ImageReader) ImageIO.getImageReadersByFormatName("gif").next();
+				ImageInputStream iis = ImageIO.createImageInputStream(ClassLoader.getSystemResourceAsStream("res/Animation.gif"));
+				reader.setInput(iis, false);
+				int imageCount = reader.getNumImages(true);
+				frames = new BufferedImage[imageCount - 1];
+				for(int i = 1; i < imageCount; ++i) {
+					frames[i - 1] = reader.read(i);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		/**
+		 * Draw the animation panel
+		 */
+		public void paintComponent(Graphics g) {
+			g.setColor(animationPanel.getBackground());
+			g.fillRect((getWidth() - AnimationPanelSize) >> 1, 0, AnimationPanelSize, AnimationPanelSize);
+			g.drawImage(frames[((int) (frame * frames.length) + OFFSET) % frames.length], (getWidth() - AnimationPanelSize) >> 1, 0, AnimationPanelSize, AnimationPanelSize, null);
 		}
 	}
 }
