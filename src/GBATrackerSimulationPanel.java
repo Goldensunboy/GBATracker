@@ -6,12 +6,13 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Rectangle2D;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -156,7 +157,7 @@ public class GBATrackerSimulationPanel extends JComponent {
 						elapsedMS %= 5000 / simPanel.controller.getBPM();
 						playNote();
 					}
-					
+
 					// Repaint stuff
 					simPanel.controller.updateAnimation((simPanel.playSlider * 4) % 1);
 					simPanel.repaint();
@@ -207,7 +208,7 @@ public class GBATrackerSimulationPanel extends JComponent {
 			 */
 			@Override
 			public void mousePressed(MouseEvent e) {
-
+				
 				// Do nothing while simulating
 				if(simulating || e.getButton() == 4 || e.getButton() == 5) {
 					return;
@@ -307,7 +308,7 @@ public class GBATrackerSimulationPanel extends JComponent {
 			}
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				// unused
+				requestFocusInWindow();
 			}
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -315,6 +316,7 @@ public class GBATrackerSimulationPanel extends JComponent {
 			}
 		});
 
+		// Create mouse wheel listener for scrolling
 		addMouseWheelListener(new MouseWheelListener() {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
@@ -325,6 +327,98 @@ public class GBATrackerSimulationPanel extends JComponent {
 				}
 			}
 		});
+		
+		// Send key events to the simulation panel
+		addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				GBATrackerSimulationPanel.this.keyPressed(e.getKeyCode());
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// unused
+			}
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// unused
+			}
+		});
+	}
+
+	/**
+	 * Update a note when a key is pressed
+	 * @param keyCode Event passed from the JFrame
+	 */
+	public void keyPressed(int keyCode) {
+		if(!simulating && selectedNote != null && selectedNoteChannel < 2) {
+			boolean modified = true;
+			switch(keyCode) {
+			case KeyEvent.VK_C:
+				if(selectedNote.note.musicalNote == 0) {
+					selectedNote.note.musicalNote = 1;
+				} else {
+					selectedNote.note.musicalNote = 0;
+				}
+				break;
+			case KeyEvent.VK_D:
+				if(selectedNote.note.musicalNote == 2) {
+					selectedNote.note.musicalNote = 3;
+				} else {
+					selectedNote.note.musicalNote = 2;
+				}
+				break;
+			case KeyEvent.VK_E:
+				selectedNote.note.musicalNote = 4;
+				break;
+			case KeyEvent.VK_F:
+				if(selectedNote.note.musicalNote == 5) {
+					selectedNote.note.musicalNote = 6;
+				} else {
+					selectedNote.note.musicalNote = 5;
+				}
+				break;
+			case KeyEvent.VK_G:
+				if(selectedNote.note.musicalNote == 7) {
+					selectedNote.note.musicalNote = 8;
+				} else {
+					selectedNote.note.musicalNote = 7;
+				}
+				break;
+			case KeyEvent.VK_A:
+				if(selectedNote.note.musicalNote == 9) {
+					selectedNote.note.musicalNote = 10;
+				} else {
+					selectedNote.note.musicalNote = 9;
+				}
+				break;
+			case KeyEvent.VK_B:
+				selectedNote.note.musicalNote = 11;
+				break;
+			case KeyEvent.VK_UP:
+				if(selectedNote.note.octave < 7) {
+					++selectedNote.note.octave;
+				} else {
+					return;
+				}
+				break;
+			case KeyEvent.VK_DOWN:
+				if(selectedNote.note.octave > 2) {
+					--selectedNote.note.octave;
+				} else {
+					return;
+				}
+				break;
+			default:
+				modified = false;
+			}
+			if(modified) {
+				selectedNote.note.playSound(selectedNoteChannel != 1);
+				controller.updateUIFromNote(selectedNote.note);
+				repaint();
+			}
+		}
 	}
 
 	/**
@@ -345,6 +439,7 @@ public class GBATrackerSimulationPanel extends JComponent {
 			repaint();
 		}
 	}
+
 
 	/**
 	 * Get the length of the song, in steps
@@ -383,6 +478,7 @@ public class GBATrackerSimulationPanel extends JComponent {
 				}
 			}
 			controller.setTooltipText(" ");
+			selectedNote = null;
 
 			// Start playing
 			playingStep = 0;
@@ -410,6 +506,7 @@ public class GBATrackerSimulationPanel extends JComponent {
 				}
 			}
 			controller.setTooltipText(" ");
+			selectedNote = null;
 
 			// Start playing
 			playingStep = (int) Math.ceil(scroll) * 48;

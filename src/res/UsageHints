@@ -5,6 +5,8 @@ Left click at the top of the simulation area to move the end marker.
 Right click at the top of the simulation area to move the loop marker.
 Left click an existing note to select it, and edit its properties.
 When you select a note, the UI will update to show that note's properties.
+Type A-G when a note is selected to change the note's tone; twice for sharp.
+Press up or down to change a selected note's octave.
 To edit notes between the bars, change the quantization level.
 Click on the green arrow button to play from measure 0.
 Click on the blue arrow button to play from the first currently visible measure.
