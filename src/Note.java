@@ -5,22 +5,22 @@ import java.util.Random;
  * @author Andrew Wilder
  */
 public class Note {
-	
+
 	/** Constants */
 	private static final double PLAYER_VOLUME = 0.3;
 	private static final int[] NoteFrequencies = {
 		8013, 7566, 7144, 6742, 6362, 6005, 5666, 5346, 5048, 4766, 4499, 4246
 	};
-	
+
 	/** Vars used for playing sounds */
 	private static Channel testChannel = new Channel();
 	private int[] hash = new int[4];
-	
+
 	/** Used for noise generation */
 	private static Random rand = new Random(0); // deterministic
 	private static boolean rands[] = new boolean[0x7FFF];
 	private byte[] buf = new byte[3 * 48000];
-	
+
 	/** Global parameters */
 	public boolean isSquareType;
 	public int volume;
@@ -28,7 +28,7 @@ public class Note {
 	public boolean increasingEnvelope;
 	public boolean hasCutoff;
 	public int cutoffValue;
-	
+
 	/** Square channel properties */
 	public int musicalNote; // C = 0
 	public int octave;
@@ -36,19 +36,19 @@ public class Note {
 	public int sweepRate;
 	public int sweepStep;
 	public boolean increasingSweep;
-	
+
 	/** Noise channel properties */
 	public double dividingRatio;
 	public int shiftClockFrequency;
 	public boolean counterStepIs15Bits;
-	
+
 	/**
 	 * Empty constructor provided
 	 */
 	public Note(boolean isSquareType) {
 		this.isSquareType = isSquareType;
 	}
-	
+
 	/**
 	 * Update the Note's hash on rendering the buffer
 	 */
@@ -58,7 +58,7 @@ public class Note {
 		hash[2] = getFRQ();
 		hash[3] = hasSweep ? 1 : 0;
 	}
-	
+
 	/**
 	 * Check the hash
 	 * @return true if the Note was unchanged
@@ -66,7 +66,7 @@ public class Note {
 	private boolean checkHash(boolean hasSweep) {
 		return hash[0] == getSWP() && hash[1] == getENV() && hash[2] == getFRQ() && hash[3] == (hasSweep ? 1 : 0);
 	}
-	
+
 	/**
 	 * Construct a square channel note
 	 * @param SWP Sweep
@@ -103,7 +103,7 @@ public class Note {
 		octave = steps / 12 + 2;
 		prepareBuf(hasSweep); // Render notes while loading
 	}
-	
+
 	/**
 	 * Construct a noise channel note
 	 * @param ENV Envelope
@@ -120,32 +120,32 @@ public class Note {
 		counterStepIs15Bits = ((FRQ >> 3) & 1) == 0;
 		prepareBuf(true);
 	}
-	
+
 	/**
 	 * Populate the sound buffer
 	 */
 	void prepareBuf(boolean hasSweep) {
-		
+
 		// Don't re-render this note if the hash matches
 		if(checkHash(hasSweep)) {
 			return;
 		} else {
 			updateHash(hasSweep);
 		}
-		
+
 		// Differentiate between square or noise notes
 		if(isSquareType) {
 			boolean pitchOutOfRange = false;
 			double phaseAdjust = 0;
 			int currVolume = volume;
-			
+
 			// Get the wavelength of the wave form
 			double freq = 440 * Math.pow(2, (musicalNote - 9 + (octave - 4) * 12) / 12.0);
 			double wavelength = 48000 / freq;
-			
+
 			// Fill in the samples
 			for(int i = 0; i < buf.length; ++i) {
-				
+
 				// Adjust frequency if sweeping
 				if(hasSweep && i > 0 && sweepStep > 0 && i % (sweepStep * 375) == 0) {
 					double n = 2048 - 131072 / freq;
@@ -158,7 +158,7 @@ public class Note {
 					wavelength = 48000 / freq;
 					phaseAdjust = i % wavelength;
 				}
-				
+
 				// Adjust envelope volume
 				if(i > 0 && envelopeStep > 0 && i % (envelopeStep * 750) == 0) {
 					if(increasingEnvelope) {
@@ -171,13 +171,13 @@ public class Note {
 						}
 					}
 				}
-				
+
 				// Determine sample amplitude by volume
 				byte amplitude = (byte) (127 * PLAYER_VOLUME * currVolume / 15);
 				if(pitchOutOfRange || hasCutoff && i / 48000.0 > (64 - cutoffValue) / 256.0) {
 					amplitude = 0;
 				}
-				
+
 				// Determine high or low by duty cycle
 				double phase = (i - phaseAdjust) % wavelength;
 				if(phase / wavelength < dutyCycle) {
@@ -190,14 +190,14 @@ public class Note {
 			int X = 0;
 			int currVolume = volume;
 			boolean high = true;
-			
+
 			// Get the wavelength for one period of noise step
 			double freq = 524288 / dividingRatio / Math.pow(2, shiftClockFrequency + 1);
 			double wavelength = 48000 / freq;
-			
+
 			// Fill in the samples
 			for(int i = 0; i < buf.length; ++i) {
-				
+
 				// Adjust envelope volume
 				if(i > 0 && envelopeStep > 0 && i % (envelopeStep * 750) == 0) {
 					if(increasingEnvelope) {
@@ -210,7 +210,7 @@ public class Note {
 						}
 					}
 				}
-				
+
 				// At each step, determine if the waveform should switch
 				double phase = i % wavelength;
 				if(i > 0 && phase < 1.0) {
@@ -219,7 +219,7 @@ public class Note {
 						X = 0;
 					}
 				}
-				
+
 				// Determine sample amplitude by volume
 				byte amplitude = (byte) (127 * PLAYER_VOLUME * currVolume / 15);
 				if(hasCutoff && i / 48000.0 > (64 - cutoffValue) / 256.0) {
@@ -233,7 +233,7 @@ public class Note {
 			}
 		}
 	}
-	
+
 	/**
 	 * Play the sound buffer
 	 */
@@ -246,7 +246,7 @@ public class Note {
 			}
 		}.start();
 	}
-	
+
 	/**
 	 * Utility function for preparing and playing the buffer
 	 * @param hasSweep
@@ -255,7 +255,7 @@ public class Note {
 		prepareBuf(hasSweep);
 		playBuf(testChannel);
 	}
-	
+
 	/**
 	 * Generate the waveform for the noise channel
 	 */
@@ -264,7 +264,7 @@ public class Note {
 			rands[i] = rand.nextBoolean();
 		}
 	}
-	
+
 	/**
 	 * Return the sweep value for this Note
 	 * @return The sweep value in GBA format
@@ -272,7 +272,7 @@ public class Note {
 	public int getSWP() {
 		return sweepRate | ((increasingSweep ? 0 : 1) << 3) | (sweepStep << 4);
 	}
-	
+
 	/**
 	 * Return the envelope value for this Note
 	 * @return The envelope value in GBA format
@@ -280,7 +280,7 @@ public class Note {
 	public int getENV() {
 		return cutoffValue | ((int) (dutyCycle * 4) << 6) | (envelopeStep << 8) | ((increasingEnvelope ? 1 : 0) << 11) | (volume << 12);
 	}
-	
+
 	/**
 	 * Get the frequency value for this Note
 	 * @return The frequency value in GBA format
@@ -293,7 +293,7 @@ public class Note {
 			return FRQ | ((int) dividingRatio) | ((counterStepIs15Bits ? 0 : 1) << 3) | (shiftClockFrequency << 4);
 		}
 	}
-	
+
 	/**
 	 * Print the register values corresponding to this note
 	 * @return The sound values for GBA

@@ -20,7 +20,7 @@ import javax.swing.event.ChangeListener;
  */
 @SuppressWarnings("serial")
 public class GBATrackerSquareChannelPanel extends JPanel {
-	
+
 	/** Definitions */
 	public static final String[] Notes = {
 		"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
@@ -36,7 +36,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 	};
 	private static final Integer[] SweepRates = Envelopes;
 	private static final Integer[] SweepSteps = Envelopes;
-	
+
 	/** Components used by the panel */
 	private JComboBox<String> noteComboBox;
 	private JComboBox<Integer> octaveComboBox;
@@ -52,19 +52,19 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 	private JSlider volumeSlider;
 	private JLabel volumeLabel;
 	private static boolean allowUpdates = true;
-	
+
 	/**
 	 * Create the UI for the square wave channel modifiers
 	 * @param controller Reference to the main controller
 	 */
 	public GBATrackerSquareChannelPanel(final GBATrackerFrame controller) {
-		
+
 		// Initialize JPanel related properties
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("Square Channels"),
-                BorderFactory.createEmptyBorder(5,5,5,5)));
-		
+				BorderFactory.createTitledBorder("Square Channels"),
+				BorderFactory.createEmptyBorder(5,5,5,5)));
+
 		// ActionListener for updating the selected note
 		ActionListener updateSelectedNoteListener = new ActionListener() {
 			@Override
@@ -74,7 +74,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 				}
 			}
 		};
-		
+
 		// Note pitch panel
 		JPanel pitchPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		pitchPanel.add(new JLabel("Tone:"));
@@ -93,7 +93,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		dutyComboBox.addActionListener(updateSelectedNoteListener);
 		pitchPanel.add(dutyComboBox);
 		add(pitchPanel);
-		
+
 		// Volume panel
 		JPanel volumePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		volumePanel.add(new JLabel("Volume:"));
@@ -110,13 +110,13 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 				}
 			}
 		});
-		
+
 		volumePanel.add(volumeSlider);
 		volumeLabel = new JLabel("15");
 		volumeLabel.setPreferredSize(new Dimension(25, 10));
 		volumePanel.add(volumeLabel);
 		add(volumePanel);
-		
+
 		// Note envelope panel
 		JPanel envelopePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		envelopePanel.add(new JLabel("Env:"));
@@ -130,7 +130,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		increasingEnvelopeCheckBox.addActionListener(updateSelectedNoteListener);
 		envelopePanel.add(increasingEnvelopeCheckBox);
 		add(envelopePanel);
-		
+
 		// Cutoff panel
 		JPanel cutoffPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		cutoffCheckBox = new JCheckBox("Cutoff", false);
@@ -166,7 +166,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		cutoffLabel.setPreferredSize(new Dimension(50, 10));
 		cutoffPanel.add(cutoffLabel);
 		add(cutoffPanel);
-		
+
 		// Sweep rate panel
 		JPanel sweepRatePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		sweepRatePanel.add(new JLabel("Sweep rate:"));
@@ -175,7 +175,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		sweepRateComboBox.addActionListener(updateSelectedNoteListener);
 		sweepRatePanel.add(sweepRateComboBox);
 		add(sweepRatePanel);
-		
+
 		// Sweep step panel
 		JPanel sweepStepPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		sweepStepPanel.add(new JLabel("Step:"));
@@ -188,7 +188,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		increasingSweepCheckBox.addActionListener(updateSelectedNoteListener);
 		sweepStepPanel.add(increasingSweepCheckBox);
 		add(sweepStepPanel);
-		
+
 		// Play note panel
 		JPanel playNotePanel = new JPanel();
 		JButton playNoteButton = new JButton("Test note");
@@ -204,7 +204,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		playNotePanel.add(playNoteButton);
 		add(playNotePanel);
 	}
-	
+
 	/**
 	 * Update the UI from a Note object's properties
 	 * @param note The Note object
@@ -245,7 +245,7 @@ public class GBATrackerSquareChannelPanel extends JPanel {
 		increasingSweepCheckBox.setSelected(note.increasingSweep);
 		allowUpdates = true;
 	}
-	
+
 	/**
 	 * Generate a Note object from the selected options
 	 * @return The generated Note object

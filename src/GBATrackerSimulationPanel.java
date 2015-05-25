@@ -26,7 +26,7 @@ import javax.swing.JPanel;
  */
 @SuppressWarnings("serial")
 public class GBATrackerSimulationPanel extends JPanel {
-	
+
 	/** Definitions */
 	private static final double MIN_SCROLL = -0.25;
 	private static final double MAX_ZOOM = 3.0;
@@ -37,7 +37,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 	private static final int[] PlaySliderPolygonX = {-8, 8, 0};
 	private static final int[] PlaySliderPolygonY = {0, 0, 8};
 	private static final int FRAMERATE = 60;
-	
+
 	/** Variables that define the simulation */
 	private double zoom = 0.7;
 	private double scroll = -0.1;
@@ -53,7 +53,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 	private boolean looping = true;
 	private int playingStep = 0;
 	private double startScroll = 0;
-	
+
 	/**
 	 * Get the maximum step for the notes currently placed
 	 * @return The maximum step, in 48ths
@@ -69,12 +69,12 @@ public class GBATrackerSimulationPanel extends JPanel {
 		}
 		return maxStep;
 	}
-	
+
 	/**
 	 * The ActionListener housing the update function for the simulation
 	 */
 	private static class SimulationListener implements ActionListener {
-		
+
 		/** MS elapsed after last played note */
 		private int elapsedMS = 0;
 
@@ -85,12 +85,12 @@ public class GBATrackerSimulationPanel extends JPanel {
 		public SimulationListener(GBATrackerSimulationPanel simPanel) {
 			this.simPanel = simPanel;
 		}
-		
+
 		/**
 		 * Play a note of music
 		 */
 		private void playNote() {
-			
+
 			// Get the notes to play
 			EditorNote edn = new EditorNote(null, simPanel.playingStep);
 			Note[] playNotes = {null, null, null};
@@ -106,25 +106,25 @@ public class GBATrackerSimulationPanel extends JPanel {
 					}
 				}
 			}
-			
+
 			// Play available notes
 			for(int i = 0; i < 3; ++i) {
 				if(playNotes[i] != null) {
 					playNotes[i].playBuf(simPanel.channels.get(i).channel);
 				}
 			}
-			
+
 			// Move the playing step
 			if(++simPanel.playingStep >= simPanel.endStep) {
-				
+
 				// If we've reached the end of playback...
 				if(simPanel.looping) {
-					
+
 					// If looping, set play step to loop marker and scroll back to it
 					simPanel.playingStep = simPanel.loopStep;
 					simPanel.scroll = simPanel.playingStep / 48.0 - 0.1;
 				} else {
-					
+
 					// If not looping, reset scroll and stop simulating
 					simPanel.scroll = simPanel.startScroll;
 					simPanel.simulating = false;
@@ -132,24 +132,24 @@ public class GBATrackerSimulationPanel extends JPanel {
 				}
 			}
 		}
-		
+
 		/**
 		 * Update graphics, and play a note at appropriate times
 		 */
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
+
 			// New thread to help keep the timer going the right speed
 			new Thread() {
 				public void run() {
 					// Move the arrow
 					simPanel.playSlider = (simPanel.playingStep + (double) elapsedMS / (5000 / simPanel.controller.getBPM())) / 48;
-					
+
 					// Scroll the screen
 					if((simPanel.playSlider - simPanel.scroll) * simPanel.getWidth() * simPanel.zoom > simPanel.getWidth()) {
 						simPanel.scroll += 1 / simPanel.zoom;
 					}
-					
+
 					// Play a note
 					if((elapsedMS += 1000 / FRAMERATE) > 5000 / simPanel.controller.getBPM()) {
 						elapsedMS %= 5000 / simPanel.controller.getBPM();
@@ -161,7 +161,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 		}
 	};
 	private Timer simulationTimer = null;
-	
+
 	/**
 	 * Get the BPM
 	 */
@@ -169,7 +169,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 	public int getBPM() {
 		return controller.getBPM();
 	}
-	
+
 	/**
 	 * Clear all the notes
 	 */
@@ -179,25 +179,25 @@ public class GBATrackerSimulationPanel extends JPanel {
 		}
 		repaint();
 	}
-	
+
 	/**
 	 * Initialize the simulation panel and the simulation variables
 	 * @param controller Reference to the main controller
 	 */
 	public GBATrackerSimulationPanel(final GBATrackerFrame controller) {
-		
+
 		// No actual components, just a rigid area to maintain window size
 		this.controller = controller;
 		add(Box.createRigidArea(new Dimension(800, 260)));
-		
+
 		// Instantiate the channel data
 		channels.add(new EditorChannel()); // Channel 1 (square w/ sweep)
 		channels.add(new EditorChannel()); // Channel 2 (square)
 		channels.add(new EditorChannel()); // Channel 4 (noise)
-		
+
 		// Create the MouseListener that handling clicking
 		addMouseListener(new MouseListener() {
-			
+
 			/**
 			 * Handle mouse clicks
 			 */
@@ -208,13 +208,13 @@ public class GBATrackerSimulationPanel extends JPanel {
 				if(simulating || e.getButton() == 4 || e.getButton() == 5) {
 					return;
 				}
-				
+
 				// Which channel was clicked?
 				clickChannel = e.getY() / (getHeight() >> 2) - 1;
 				if(clickChannel < -1) {
 					return;
 				}
-				
+
 				// Which step was clicked?
 				double bars = scroll * quantization;
 				double measureWidth = getWidth() * zoom;
@@ -230,7 +230,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 				}
 				clickStep *= 48 / quantization;
 				controller.setModified();
-				
+
 				// Was the end marker clicked?
 				if(clickChannel == -1) {
 					if(e.getButton() == MouseEvent.BUTTON1) {
@@ -253,7 +253,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 						endStep = clickStep + 48 / quantization;
 					}
 				}
-				
+
 				// Is there already a note here?
 				Note newNote = controller.getNoteFromUI(clickChannel < 2);
 				EditorNote newEdNote = new EditorNote(newNote, clickStep);
@@ -288,11 +288,11 @@ public class GBATrackerSimulationPanel extends JPanel {
 						}
 					}
 				}
-					
+
 				// Update the simulation area
 				repaint();
 			}
-			
+
 			@Override
 			public void mouseExited(MouseEvent e) {
 				// unused
@@ -310,7 +310,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 				// unused
 			}
 		});
-		
+
 		addMouseWheelListener(new MouseWheelListener() {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
@@ -322,7 +322,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 			}
 		});
 	}
-	
+
 	/**
 	 * Update the selected note from UI changes in real time
 	 * @param note
@@ -341,7 +341,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 			repaint();
 		}
 	}
-	
+
 	/**
 	 * Get the length of the song, in steps
 	 * @return The number of 48ths in this song
@@ -356,7 +356,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 		}
 		return lineCount;
 	}
-	
+
 	/**
 	 * Get the start of the song's loop
 	 * @return The step on which the song loops
@@ -364,13 +364,13 @@ public class GBATrackerSimulationPanel extends JPanel {
 	public int getLoop() {
 		return loopStep;
 	}
-	
+
 	/**
 	 * Play the file from the start
 	 */
 	public void play() {
 		if(!simulating) {
-			
+
 			// Render the notes
 			controller.setTooltipText("Rendering notes...");
 			for(int i = 0; i < 3; ++i) {
@@ -379,7 +379,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 				}
 			}
 			controller.setTooltipText(" ");
-			
+
 			// Start playing
 			playingStep = 0;
 			startScroll = scroll;
@@ -389,13 +389,13 @@ public class GBATrackerSimulationPanel extends JPanel {
 			simulationTimer.start();
 		}
 	}
-	
+
 	/**
 	 * Play the file from an offset
 	 */
 	public void playHere() {
 		if(!simulating) {
-			
+
 			// Render the notes
 			controller.setTooltipText("Rendering notes...");
 			for(int i = 0; i < 3; ++i) {
@@ -404,7 +404,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 				}
 			}
 			controller.setTooltipText(" ");
-			
+
 			// Start playing
 			playingStep = (int) Math.ceil(scroll) * 48;
 			startScroll = scroll;
@@ -413,7 +413,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 			simulationTimer.start();
 		}
 	}
-	
+
 	/**
 	 * Stop playing the file
 	 */
@@ -425,7 +425,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 			repaint();
 		}
 	}
-	
+
 	/**
 	 * Zoom in
 	 * @return The amount the simulation is currently zoomed
@@ -438,7 +438,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 		repaint();
 		return zoom;
 	}
-	
+
 	/**
 	 * Zoom out
 	 * @return The amount the simulation is currently zoomed
@@ -451,7 +451,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 		repaint();
 		return zoom;
 	}
-	
+
 	/**
 	 * Scroll to the left
 	 */
@@ -463,7 +463,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 		repaint();
 		return scroll;
 	}
-	
+
 	/**
 	 * Scroll to the right
 	 */
@@ -472,7 +472,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 		repaint();
 		return scroll;
 	}
-	
+
 	/**
 	 * Set the quantization level for the editor
 	 * @param quantization The new quantization
@@ -481,7 +481,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 		this.quantization = quantization;
 		repaint();
 	}
-	
+
 	/**
 	 * Enable or disable looping
 	 * @param enable If true, loop the song
@@ -490,22 +490,22 @@ public class GBATrackerSimulationPanel extends JPanel {
 		looping = enable;
 		repaint();
 	}
-	
+
 	/**
 	 * Draw the simulation screen
 	 */
 	@Override
 	public void paintComponent(Graphics _g) {
-		
+
 		// Set up brush
 		Graphics2D g = (Graphics2D) _g;
 		g.setColor(Color.WHITE);
 		g.setFont(new Font("TimesRoman", Font.PLAIN, 20));
-		
+
 		// Background
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, getWidth(), getHeight());
-		
+
 		// Play marker
 		double measureWidth = getWidth() * zoom;
 		double X = (Math.ceil(scroll) * measureWidth) - scroll * measureWidth;
@@ -523,7 +523,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 			polyPointsY[i] = PlaySliderPolygonY[i] + (int) Math.round(Y);
 		}
 		g.fillPolygon(polyPointsX, polyPointsY, PlaySliderPolygonX.length);
-		
+
 		// Quantization bars
 		g.setStroke(new BasicStroke(3));
 		int cellHeight = getHeight() >> 2;
@@ -535,13 +535,13 @@ public class GBATrackerSimulationPanel extends JPanel {
 			g.drawLine((int) Math.round(qBarX), 3 * cellHeight / 2, (int) Math.round(qBarX), getHeight());
 		}
 		g.setColor(Color.WHITE);
-		
+
 		// Horizontal bars
 		for(int i = 0; i < 3; ++i) {
 			int h = 3 * cellHeight / 2 + i * cellHeight;
 			g.drawLine(0, h, getWidth(), h);
 		}
-		
+
 		// Measure bars
 		for(g.setStroke(new BasicStroke(3)); barX < getWidth(); barX += measureWidth) {
 			g.drawLine((int) barX, cellHeight, (int) barX, getHeight());
@@ -549,7 +549,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 			Rectangle2D stringBounds = g.getFontMetrics().getStringBounds(label, g);
 			g.drawString(label, (int) Math.round((barX - stringBounds.getWidth() / 2)), (int) Math.round((cellHeight - stringBounds.getHeight() + 5)));
 		}
-		
+
 		// Draw the notes
 		g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
 		for(int channelNum = 0; channelNum < 3; ++channelNum) {
@@ -576,14 +576,14 @@ public class GBATrackerSimulationPanel extends JPanel {
 				}
 			}
 		}
-		
+
 		// End marker
 		X = (endStep * measureWidth / 48) - scroll * measureWidth;
 		g.setColor(Color.WHITE);
 		String label = String.format("End", n++);
 		Rectangle2D stringBounds = g.getFontMetrics().getStringBounds(label, g);
 		g.drawString(label, (int) (Math.round(X) - stringBounds.getWidth() / 2), (int) stringBounds.getHeight());
-		
+
 		// Loop marker
 		if(looping) {
 			X = (loopStep * measureWidth / 48) - scroll * measureWidth;
@@ -592,7 +592,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 			g.drawString(label, (int) (Math.round(X) - stringBounds.getWidth() / 2), (int) stringBounds.getHeight());
 		}
 	}
-	
+
 	/**
 	 * Generate a String representation of the notes
 	 * @return The String representation of the notes
@@ -612,34 +612,34 @@ public class GBATrackerSimulationPanel extends JPanel {
 		}
 		return str;
 	}
-	
+
 	/**
 	 * Populate the notes from a String representation
 	 * @param csv The csv-format String representation
 	 */
 	public void populateFromString(String csv) {
-		
+
 		// Scanner used to parse the csv
 		Scanner sc = new Scanner(csv);
 		sc.useDelimiter(",");
-		
+
 		// New channels
 		List<EditorChannel> newChannels = new ArrayList<>();
 		newChannels.add(new EditorChannel());
 		newChannels.add(new EditorChannel());
 		newChannels.add(new EditorChannel());
-		
+
 		// Fail gracefully on parse error
 		try {
 			int newEndStep = Integer.parseInt(sc.next());
 			int newLoopStep = Integer.parseInt(sc.next());
-			
+
 			// For each channel...
 			for(int i = 0; i < 3; ++i) {
 				int len = Integer.parseInt(sc.next());
 				while(len-- > 0) {
 					Note note;
-					
+
 					// Differentiate between square and noise channels
 					if(i < 2) {
 						int SWP = Integer.parseInt(sc.next());
@@ -655,7 +655,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 					newChannels.get(i).notes.add(new EditorNote(note, step));
 				}
 			}
-			
+
 			// If all was successful, now set the values
 			selectedNote = null;
 			endStep = newEndStep;
@@ -669,13 +669,13 @@ public class GBATrackerSimulationPanel extends JPanel {
 			sc.close();
 		}
 	}
-	
+
 	/**
 	 * Generate formatted note data for exporting
 	 * @return The C array for the note data
 	 */
 	public String getNoteData() {
-		
+
 		// Get the uncompressed data
 		int dataVals[] = new int[endStep << 3];
 		for(int i = 0; i < endStep; ++i) {
@@ -722,7 +722,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 			}
 			dataVals[(i << 3) + 7] = 1;
 		}
-		
+
 		// Compress lines by calculating RLE lengths
 		for(int i = 0, currIndex = 0; i < endStep; ++i) {
 			if(dataVals[(i << 3) + 2] != 0 || dataVals[(i << 3) + 4] != 0 || dataVals[(i << 3) + 6] != 0) {
@@ -731,7 +731,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 				++dataVals[(currIndex << 3) + 7];
 			}
 		}
-		
+
 		// Create data string
 		int dataLen = getDataLength();
 		int currLine = 0;
@@ -753,18 +753,18 @@ public class GBATrackerSimulationPanel extends JPanel {
 		}
 		return dataStr;
 	}
-	
+
 	/**
 	 * This class adds a step to a regular Note object for representation in
 	 * the simulator
 	 * @author Andrew Wilder
 	 */
 	private static class EditorNote {
-		
+
 		/** The variables held by the EditorNote object */
 		public Note note;
 		public int step;
-		
+
 		/**
 		 * Create a new EditorNote object
 		 * @param note The Note to contain
@@ -774,7 +774,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 			this.note = note;
 			this.step = step;
 		}
-		
+
 		/**
 		 * Determine if this is equal to another one. Used for Lists.
 		 */
@@ -782,13 +782,13 @@ public class GBATrackerSimulationPanel extends JPanel {
 			return o instanceof EditorNote && step == ((EditorNote) o).step;
 		}
 	}
-	
+
 	/**
 	 * This class pairs a sound channel and a list of EditorNote objects
 	 * @author Andrew Wilder
 	 */
 	private static class EditorChannel {
-		
+
 		/** The variables held by the EditorChannel object */
 		public List<EditorNote> notes = new ArrayList<>();
 		public Channel channel = new Channel();

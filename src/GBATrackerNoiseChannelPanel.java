@@ -23,13 +23,13 @@ import javax.swing.event.ChangeListener;
  */
 @SuppressWarnings("serial")
 public class GBATrackerNoiseChannelPanel extends JPanel {
-	
+
 	/** Definitions */
 	private static final Integer[] DividingRatios = {
 		0, 1, 2, 3, 4, 5, 6, 7
 	};
 	private static final Integer[] Envelopes = DividingRatios;
-	
+
 	/** Components used by the panel */
 	private JComboBox<Integer> ratioComboBox;
 	private JSlider shiftFrequencySlider;
@@ -44,19 +44,19 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 	private JRadioButton counterWidth15BitsButton;
 	private JRadioButton counterWidth7BitsButton;
 	private static boolean allowUpdates = true;
-	
+
 	/**
 	 * Create the UI for the noise channel modifiers
 	 * @param controller Reference to the main controller
 	 */
 	public GBATrackerNoiseChannelPanel(final GBATrackerFrame controller) {
-		
+
 		// Initialize JPanel related properties
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("Noise Channel"),
-                BorderFactory.createEmptyBorder(5,5,5,5)));
-		
+				BorderFactory.createTitledBorder("Noise Channel"),
+				BorderFactory.createEmptyBorder(5,5,5,5)));
+
 		// ActionListener for updating the selected note
 		ActionListener updateSelectedNoteListener = new ActionListener() {
 			@Override
@@ -66,7 +66,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 				}
 			}
 		};
-		
+
 		// Note pitch panel
 		JPanel frequencyPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		frequencyPanel.add(new JLabel("Ratio:"));
@@ -93,7 +93,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		shiftFrequencyLabel.setPreferredSize(new Dimension(20, 10));
 		frequencyPanel.add(shiftFrequencyLabel);
 		add(frequencyPanel);
-		
+
 		// Volume panel
 		JPanel volumePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		volumePanel.add(new JLabel("Volume:"));
@@ -115,7 +115,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		volumeLabel.setPreferredSize(new Dimension(25, 10));
 		volumePanel.add(volumeLabel);
 		add(volumePanel);
-		
+
 		// Note envelope panel
 		JPanel envelopePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		envelopePanel.add(new JLabel("Env:"));
@@ -129,7 +129,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		increasingEnvelopeCheckBox.addActionListener(updateSelectedNoteListener);
 		envelopePanel.add(increasingEnvelopeCheckBox);
 		add(envelopePanel);
-		
+
 		// Cutoff panel
 		JPanel cutoffPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		cutoffCheckBox = new JCheckBox("Cutoff", false);
@@ -165,7 +165,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		cutoffLabel.setPreferredSize(new Dimension(50, 10));
 		cutoffPanel.add(cutoffLabel);
 		add(cutoffPanel);
-		
+
 		// Counter width panel
 		JPanel counterWidthPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		counterWidthPanel.add(new JLabel("Rand:"));
@@ -182,7 +182,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		counterWidthPanel.add(counterWidth7BitsButton);
 		add(counterWidthPanel);
 		add(Box.createVerticalStrut(35));
-		
+
 		// Play note panel
 		JPanel playNotePanel = new JPanel();
 		JButton playNoteButton = new JButton("Test note");
@@ -198,7 +198,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		playNotePanel.add(playNoteButton);
 		add(playNotePanel);
 	}
-	
+
 	/**
 	 * Update the UI from a Note object's properties
 	 * @param note The Note object
@@ -228,7 +228,7 @@ public class GBATrackerNoiseChannelPanel extends JPanel {
 		}
 		allowUpdates = true;
 	}
-	
+
 	/**
 	 * Generate a Note object from the selected options
 	 * @return The generated Note object

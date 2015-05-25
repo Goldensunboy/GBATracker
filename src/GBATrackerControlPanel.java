@@ -17,7 +17,7 @@ import javax.swing.JPanel;
  */
 @SuppressWarnings("serial")
 public class GBATrackerControlPanel extends JPanel {
-	
+
 	/** These are the icons used by the control panel */
 	private static Icon loadIcon, saveIcon, saveAsIcon, exportIcon, playIcon, playHereIcon, stopIcon, aboutIcon, hintIcon;
 	static {
@@ -35,16 +35,16 @@ public class GBATrackerControlPanel extends JPanel {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Create the UI for the control panel
 	 * @param controller
 	 */
 	public GBATrackerControlPanel(final GBATrackerFrame controller) {
-		
+
 		// Initialize JPanel related properties
 		super(new FlowLayout(FlowLayout.LEADING));
-		
+
 		// Load button
 		JButton loadButton = new JButton(loadIcon);
 		loadButton.setMargin(new Insets(0, 0, 0, 0));
@@ -56,7 +56,7 @@ public class GBATrackerControlPanel extends JPanel {
 		});
 		loadButton.addMouseListener(new MessageMouseListener(controller, "Load a file from disk"));
 		add(loadButton);
-		
+
 		// Save button
 		JButton saveButton = new JButton(saveIcon);
 		saveButton.setMargin(new Insets(0, 0, 0, 0));
@@ -80,7 +80,7 @@ public class GBATrackerControlPanel extends JPanel {
 		});
 		saveAsButton.addMouseListener(new MessageMouseListener(controller, "Save as a new file"));
 		add(saveAsButton);
-		
+
 		// Export button
 		JButton exportButton = new JButton(exportIcon);
 		exportButton.setMargin(new Insets(0, 0, 0, 0));
@@ -92,9 +92,9 @@ public class GBATrackerControlPanel extends JPanel {
 		});
 		exportButton.addMouseListener(new MessageMouseListener(controller, "Export song to C file"));
 		add(exportButton);
-		
+
 		add(new JLabel(" - "));
-		
+
 		// Play from start button
 		JButton playButton = new JButton(playIcon);
 		playButton.setMargin(new Insets(0, 0, 0, 0));
@@ -106,7 +106,7 @@ public class GBATrackerControlPanel extends JPanel {
 		});
 		playButton.addMouseListener(new MessageMouseListener(controller, "Play from start of file"));
 		add(playButton);
-		
+
 		// Play from here button
 		JButton playHereButton = new JButton(playHereIcon);
 		playHereButton.setMargin(new Insets(0, 0, 0, 0));
@@ -118,7 +118,7 @@ public class GBATrackerControlPanel extends JPanel {
 		});
 		playHereButton.addMouseListener(new MessageMouseListener(controller, "Play from this measure"));
 		add(playHereButton);
-		
+
 		// Play from here button
 		JButton stopButton = new JButton(stopIcon);
 		stopButton.setMargin(new Insets(0, 0, 0, 0));
@@ -130,9 +130,9 @@ public class GBATrackerControlPanel extends JPanel {
 		});
 		stopButton.addMouseListener(new MessageMouseListener(controller, "Stop the music"));
 		add(stopButton);
-		
+
 		add(new JLabel(" - "));
-		
+
 		JButton hintButton = new JButton(hintIcon);
 		hintButton.setMargin(new Insets(0, 0, 0, 0));
 		hintButton.addActionListener(new ActionListener() {
@@ -143,7 +143,7 @@ public class GBATrackerControlPanel extends JPanel {
 		});
 		hintButton.addMouseListener(new MessageMouseListener(controller, "Display usage hints"));
 		add(hintButton);
-		
+
 		JButton aboutButton = new JButton(aboutIcon);
 		aboutButton.setMargin(new Insets(0, 0, 0, 0));
 		aboutButton.addActionListener(new ActionListener() {

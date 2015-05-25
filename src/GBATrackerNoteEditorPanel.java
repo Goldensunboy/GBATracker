@@ -24,12 +24,12 @@ import javax.swing.JTextField;
  */
 @SuppressWarnings("serial")
 public class GBATrackerNoteEditorPanel extends JPanel {
-	
+
 	/** Definitions */
 	private static final Integer[] Quantizations = {
 		8, 12, 16, 24, 48
 	};
-	
+
 	/** Components used by the panel */
 	private JTextField titleTextField;
 	private JTextField bpmTextField;
@@ -37,7 +37,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	private GBATrackerSquareChannelPanel squareChannelPanel;
 	private GBATrackerNoiseChannelPanel noiseChannelPanel;
 	private JCheckBox loopCheckBox;
-	
+
 	/**
 	 * Get the title of the song
 	 * @return The title of the song
@@ -45,7 +45,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	public String getTitle() {
 		return titleTextField.getText();
 	}
-	
+
 	/**
 	 * Get the BPM of the song
 	 * @return The BPM of the song
@@ -53,7 +53,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	public String getBPM() {
 		return bpmTextField.getText();
 	}
-	
+
 	/**
 	 * Get the editor quantization
 	 * @return The editor quantization
@@ -61,7 +61,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	public int getQuantization() {
 		return (Integer) quantizationComboBox.getSelectedItem();
 	}
-	
+
 	/**
 	 * Get a Note object from the appropriate UI subgroup
 	 * @param isSquare Whether the note is for a square or noise channel
@@ -74,7 +74,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 			return noiseChannelPanel.createNote();
 		}
 	}
-	
+
 	/**
 	 * Validate the BPM value the user input in the editor panel
 	 * @return Whether or not the BPM value is valid
@@ -82,7 +82,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	public boolean validateBPM() {
 		return Pattern.matches("[1-9]\\d*", bpmTextField.getText());
 	}
-	
+
 	/**
 	 * Update the UI components from data in a Note
 	 * @param note
@@ -94,16 +94,16 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 			noiseChannelPanel.updateUIFromNote(note);
 		}
 	}
-	
+
 	/**
 	 * Create the control panel
 	 * @param controller Reference to the main controller
 	 */
 	public GBATrackerNoteEditorPanel(final GBATrackerFrame controller) {
-		
+
 		// Initialize JPanel related properties
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		
+
 		// Note properties panel
 		JPanel notePropertiesPanel = new JPanel();
 		notePropertiesPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
@@ -111,14 +111,14 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		notePropertiesPanel.add(squareChannelPanel);
 		noiseChannelPanel = new GBATrackerNoiseChannelPanel(controller);
 		notePropertiesPanel.add(noiseChannelPanel);
-		
+
 		// Editor properties panel
 		JPanel editorPropertiesPanel = new JPanel();
 		editorPropertiesPanel.setLayout(new BoxLayout(editorPropertiesPanel, BoxLayout.Y_AXIS));
 		editorPropertiesPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder("Song Properties"),
-                BorderFactory.createEmptyBorder(5,5,5,5)));
-		
+				BorderFactory.createTitledBorder("Song Properties"),
+				BorderFactory.createEmptyBorder(5,5,5,5)));
+
 		// Title
 		JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		titlePanel.add(new JLabel("Title:"));
@@ -144,7 +144,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		});
 		titlePanel.add(titleTextField);
 		editorPropertiesPanel.add(titlePanel);
-		
+
 		// BPM
 		JPanel bpmPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		bpmPanel.add(new JLabel("BPM:"));
@@ -177,7 +177,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		});
 		bpmPanel.add(loopCheckBox);
 		editorPropertiesPanel.add(bpmPanel);
-		
+
 		// Quantization
 		JPanel quantizationPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		quantizationPanel.add(new JLabel("Quantization:"));
@@ -192,7 +192,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		});
 		quantizationPanel.add(quantizationComboBox);
 		editorPropertiesPanel.add(quantizationPanel);
-		
+
 		// View
 		JPanel viewPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		JButton zoomInButton = new JButton("+");
@@ -236,13 +236,13 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 		});
 		viewPanel.add(moveRightButton);
 		editorPropertiesPanel.add(viewPanel);
-		
+
 		// Clean up
 		editorPropertiesPanel.add(Box.createRigidArea(new Dimension(220, 103)));
 		notePropertiesPanel.add(editorPropertiesPanel);
 		add(notePropertiesPanel);
 	}
-	
+
 	/**
 	 * Get a CSV representation of the song options
 	 * @return The CSV values
@@ -250,7 +250,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	public String generateCSV() {
 		return titleTextField.getText() + "," + bpmTextField.getText() + "," + loopCheckBox.isSelected();
 	}
-	
+
 	/**
 	 * Get looping value
 	 * @return True if looping is enabled
@@ -258,7 +258,7 @@ public class GBATrackerNoteEditorPanel extends JPanel {
 	public boolean getLooping() {
 		return loopCheckBox.isSelected();
 	}
-	
+
 	/**
 	 * Update the UI from CSV values generated by generateCSV
 	 * @param csv The csv values

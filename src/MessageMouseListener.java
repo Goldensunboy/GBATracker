@@ -7,11 +7,11 @@ import java.awt.event.MouseListener;
  * @author Andrew Wilder
  */
 public class MessageMouseListener implements MouseListener {
-	
+
 	/** The message to display when hovering over a component */
 	private GBATrackerFrame controller;
 	private String message;
-	
+
 	/**
 	 * Create a new instance of the message mouse listener
 	 * @param message The message to display when hovering over a component
@@ -36,7 +36,7 @@ public class MessageMouseListener implements MouseListener {
 	public void mouseExited(MouseEvent e) {
 		controller.setTooltipText(" ");
 	}
-	
+
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// unused
