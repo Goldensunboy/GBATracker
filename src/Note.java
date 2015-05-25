@@ -14,7 +14,7 @@ public class Note {
 	
 	/** Vars used for playing sounds */
 	private static Channel testChannel = new Channel();
-	private int[] hash = new int[3];
+	private int[] hash = new int[4];
 	
 	/** Used for noise generation */
 	private static Random rand = new Random(0); // deterministic
@@ -52,18 +52,19 @@ public class Note {
 	/**
 	 * Update the Note's hash on rendering the buffer
 	 */
-	private void updateHash() {
+	private void updateHash(boolean hasSweep) {
 		hash[0] = getSWP();
 		hash[1] = getENV();
 		hash[2] = getFRQ();
+		hash[3] = hasSweep ? 1 : 0;
 	}
 	
 	/**
 	 * Check the hash
 	 * @return true if the Note was unchanged
 	 */
-	private boolean checkHash() {
-		return hash[0] == getSWP() && hash[1] == getENV() && hash[2] == getFRQ();
+	private boolean checkHash(boolean hasSweep) {
+		return hash[0] == getSWP() && hash[1] == getENV() && hash[2] == getFRQ() && hash[3] == (hasSweep ? 1 : 0);
 	}
 	
 	/**
@@ -72,7 +73,7 @@ public class Note {
 	 * @param ENV Envelope
 	 * @param FRQ Frequency
 	 */
-	public Note(int SWP, int ENV, int FRQ) {
+	public Note(int SWP, int ENV, int FRQ, boolean hasSweep) {
 		isSquareType = true;
 		volume = (ENV >> 12) & 0xF;
 		envelopeStep = (ENV >> 8) & 7;
@@ -100,6 +101,7 @@ public class Note {
 		int steps = (int) Math.round(Math.log(freq / 440) / Math.log(2) * 12) + 33;
 		musicalNote = steps % 12;
 		octave = steps / 12 + 2;
+		prepareBuf(hasSweep); // Render notes while loading
 	}
 	
 	/**
@@ -116,6 +118,7 @@ public class Note {
 		hasCutoff = ((FRQ >> 14) & 1) == 1;
 		shiftClockFrequency = (FRQ >> 4) & 0xF;
 		counterStepIs15Bits = ((FRQ >> 3) & 1) == 0;
+		prepareBuf(true);
 	}
 	
 	/**
@@ -124,10 +127,10 @@ public class Note {
 	void prepareBuf(boolean hasSweep) {
 		
 		// Don't re-render this note if the hash matches
-		if(checkHash()) {
+		if(checkHash(hasSweep)) {
 			return;
 		} else {
-			updateHash();
+			updateHash(hasSweep);
 		}
 		
 		// Differentiate between square or noise notes

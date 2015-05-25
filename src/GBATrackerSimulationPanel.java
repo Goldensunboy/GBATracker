@@ -645,7 +645,7 @@ public class GBATrackerSimulationPanel extends JPanel {
 						int SWP = Integer.parseInt(sc.next());
 						int ENV = Integer.parseInt(sc.next());
 						int FRQ = Integer.parseInt(sc.next());
-						note = new Note(SWP, ENV, FRQ);
+						note = new Note(SWP, ENV, FRQ, i != 1);
 					} else {
 						int ENV = Integer.parseInt(sc.next());
 						int FRQ = Integer.parseInt(sc.next());
