@@ -1,7 +1,5 @@
 import java.util.Random;
 
-import javax.sound.sampled.LineUnavailableException;
-
 /**
  * This class represents the properties of a note
  * @author Andrew Wilder
@@ -9,7 +7,7 @@ import javax.sound.sampled.LineUnavailableException;
 public class Note {
 	
 	/** Constants */
-	private static final double PLAYER_VOLUME = 0.3;
+	private static final double PLAYER_VOLUME = 0.5;
 	private static final int[] NoteFrequencies = {
 		8013, 7566, 7144, 6742, 6362, 6005, 5666, 5346, 5048, 4766, 4499, 4246
 	};
@@ -215,13 +213,8 @@ public class Note {
 		new Thread() {
 			@Override
 			public void run() {
-				try {
-					channel.line.close();
-					channel.line.open();
-					channel.line.write(buf, 0, buf.length);
-				} catch (LineUnavailableException e) {
-					e.printStackTrace();
-				}
+				channel.line.flush();
+				channel.line.write(buf, 0, buf.length);
 			}
 		}.start();
 	}

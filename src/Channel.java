@@ -1,5 +1,6 @@
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
@@ -11,7 +12,7 @@ import javax.sound.sampled.SourceDataLine;
 public class Channel {
 	
 	/** Definitions */
-	private static final AudioFormat PlayerFormat = new AudioFormat(48000, 8, 1, true, true);
+	public static final AudioFormat PlayerFormat = new AudioFormat(48000, 8, 1, true, true);
 	
 	/** The SourceDataLine used for playing sounds */
 	public SourceDataLine line;
@@ -23,11 +24,13 @@ public class Channel {
 	 * Construct a new Channel object
 	 */
 	public Channel() {
+		DataLine.Info info = new DataLine.Info(SourceDataLine.class, PlayerFormat);
 		try {
-			line = AudioSystem.getSourceDataLine(PlayerFormat);
-			line.open();
+			line = (SourceDataLine) AudioSystem.getLine(info);
+			line.open(PlayerFormat);
 		} catch (LineUnavailableException e) {
 			e.printStackTrace();
 		}
+		line.start();
 	}
 }
