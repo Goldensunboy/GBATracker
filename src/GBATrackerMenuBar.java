@@ -99,6 +99,26 @@ public class GBATrackerMenuBar extends JMenuBar {
 			}
 		});
 		editMenu.add(zoomOutEditMenuItem);
+		
+		JMenuItem moveLeftEditMenuItem = new JMenuItem("Move Left", KeyEvent.VK_L);
+		moveLeftEditMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0));
+		moveLeftEditMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				controller.moveLeft();
+			}
+		});
+		editMenu.add(moveLeftEditMenuItem);
+		
+		JMenuItem moveRightEditMenuItem = new JMenuItem("Move Right", KeyEvent.VK_R);
+		moveRightEditMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0));
+		moveRightEditMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				controller.moveRight();
+			}
+		});
+		editMenu.add(moveRightEditMenuItem);
 
 		JMenuItem clearEditMenuItem = new JMenuItem("Clear All", KeyEvent.VK_C);
 		clearEditMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));

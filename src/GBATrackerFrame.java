@@ -1,10 +1,12 @@
 import java.awt.FlowLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
@@ -28,7 +30,7 @@ public class GBATrackerFrame extends JFrame {
 	/** Definitions */
 	private static final String APPLICATION_TITLE = "GBA Tracker";
 	private static final String FILE_EXTENSION = "gbt";
-	private static final String VERSION = "1.0.3";
+	private static final String VERSION = "1.0.4";
 
 	/** Panels used by the application */
 	private GBATrackerControlPanel controlPanel;
