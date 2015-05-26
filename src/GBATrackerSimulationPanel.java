@@ -460,8 +460,15 @@ public class GBATrackerSimulationPanel extends JComponent {
 	 * Get the start of the song's loop
 	 * @return The step on which the song loops
 	 */
-	public int getLoop() {
-		return loopStep;
+	public int getDataLoop() {
+		int lineCount = 0;
+		for(int i = 0; i < loopStep; ++i) {
+			EditorNote edn = new EditorNote(null, i);
+			if(channels.get(0).notes.contains(edn) || channels.get(1).notes.contains(edn) || channels.get(2).notes.contains(edn)) {
+				++lineCount;
+			}
+		}
+		return lineCount;
 	}
 
 	/**

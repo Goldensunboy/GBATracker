@@ -249,7 +249,7 @@ public class GBATrackerFrame extends JFrame {
 			textC = textC.replaceAll("\\$BPM", noteEditorPanel.getBPM());
 			textC = textC.replaceAll("\\$LENGTH", "" + simulationPanel.getDataLength());
 			textC = textC.replaceAll("\\$NOTEDATA", "" + simulationPanel.getNoteData());
-			textC = textC.replaceAll("\\$LOOP", "" + simulationPanel.getLoop());
+			textC = textC.replaceAll("\\$LOOP", "" + simulationPanel.getDataLoop());
 			textC = textC.replaceAll("\\$ALLOWLOOPING", noteEditorPanel.getLooping() ? "1" : "0");
 			textH = textH.replaceAll("\\$SONGTITLE", songTitle);
 			textH = textH.replaceAll("\\$FILENAME", openFile == null ? "(blank)" : openFile.getName());
