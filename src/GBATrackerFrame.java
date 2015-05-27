@@ -30,7 +30,7 @@ public class GBATrackerFrame extends JFrame {
 	/** Definitions */
 	private static final String APPLICATION_TITLE = "GBA Tracker";
 	private static final String FILE_EXTENSION = "gbt";
-	private static final String VERSION = "1.1.1";
+	private static final String VERSION = "1.1.2";
 
 	/** Panels used by the application */
 	private GBATrackerControlPanel controlPanel;

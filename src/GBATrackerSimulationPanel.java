@@ -13,6 +13,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Rectangle2D;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -541,11 +542,13 @@ public class GBATrackerSimulationPanel extends JComponent {
 	 * @return The amount the simulation is currently zoomed
 	 */
 	public double zoomIn() {
-		zoom /= ZOOM_DELTA;
-		if(zoom > MAX_ZOOM) {
-			zoom = MAX_ZOOM;
+		if(!simulating) {
+			zoom /= ZOOM_DELTA;
+			if(zoom > MAX_ZOOM) {
+				zoom = MAX_ZOOM;
+			}
+			repaint();
 		}
-		repaint();
 		return zoom;
 	}
 
@@ -554,11 +557,13 @@ public class GBATrackerSimulationPanel extends JComponent {
 	 * @return The amount the simulation is currently zoomed
 	 */
 	public double zoomOut() {
-		zoom *= ZOOM_DELTA;
-		if(zoom < MIN_ZOOM) {
-			zoom = MIN_ZOOM;
+		if(!simulating) {
+			zoom *= ZOOM_DELTA;
+			if(zoom < MIN_ZOOM) {
+				zoom = MIN_ZOOM;
+			}
+			repaint();
 		}
-		repaint();
 		return zoom;
 	}
 
@@ -566,11 +571,13 @@ public class GBATrackerSimulationPanel extends JComponent {
 	 * Scroll to the left
 	 */
 	public double moveLeft() {
-		scroll -= SCROLL_DELTA / zoom;
-		if(scroll < MIN_SCROLL) {
-			scroll = MIN_SCROLL;
+		if(!simulating) {
+			scroll -= SCROLL_DELTA / zoom;
+			if(scroll < MIN_SCROLL) {
+				scroll = MIN_SCROLL;
+			}
+			repaint();
 		}
-		repaint();
 		return scroll;
 	}
 
@@ -578,8 +585,10 @@ public class GBATrackerSimulationPanel extends JComponent {
 	 * Scroll to the right
 	 */
 	public double moveRight() {
-		scroll += SCROLL_DELTA / zoom;
-		repaint();
+		if(!simulating) {
+			scroll += SCROLL_DELTA / zoom;
+			repaint();
+		}
 		return scroll;
 	}
 

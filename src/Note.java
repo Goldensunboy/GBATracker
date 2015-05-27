@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -19,7 +20,7 @@ public class Note {
 	/** Used for noise generation */
 	private static Random rand = new Random(0); // deterministic
 	private static boolean rands[] = new boolean[0x7FFF];
-	private byte[] buf = new byte[3 * 48000];
+	private byte[] buf = null;
 
 	/** Global parameters */
 	public boolean isSquareType;
@@ -46,6 +47,7 @@ public class Note {
 	 * Empty constructor provided
 	 */
 	public Note(boolean isSquareType) {
+		hash[2] = 0; // Ensures that hash check initially fails, this is never zero
 		this.isSquareType = isSquareType;
 	}
 
@@ -101,6 +103,7 @@ public class Note {
 		int steps = (int) Math.round(Math.log(freq / 440) / Math.log(2) * 12) + 33;
 		musicalNote = steps % 12;
 		octave = steps / 12 + 2;
+		hash[2] = 0;
 		prepareBuf(hasSweep); // Render notes while loading
 	}
 
@@ -118,6 +121,7 @@ public class Note {
 		hasCutoff = ((FRQ >> 14) & 1) == 1;
 		shiftClockFrequency = (FRQ >> 4) & 0xF;
 		counterStepIs15Bits = ((FRQ >> 3) & 1) == 0;
+		hash[2] = 0;
 		prepareBuf(true);
 	}
 
@@ -131,6 +135,7 @@ public class Note {
 			return;
 		} else {
 			updateHash(hasSweep);
+			buf = new byte[3 * 48000];
 		}
 
 		// Differentiate between square or noise notes
@@ -167,7 +172,11 @@ public class Note {
 						}
 					} else {
 						if(currVolume > 0) {
-							--currVolume;
+							if(--currVolume == 0) {
+								// Reduce space of the buffer if zero volume
+								buf = Arrays.copyOf(buf, i);
+								return;
+							}
 						}
 					}
 				}
@@ -175,7 +184,9 @@ public class Note {
 				// Determine sample amplitude by volume
 				byte amplitude = (byte) (127 * PLAYER_VOLUME * currVolume / 15);
 				if(pitchOutOfRange || hasCutoff && i / 48000.0 > (64 - cutoffValue) / 256.0) {
-					amplitude = 0;
+					// Reduce space of the buffer if cut off
+					buf = Arrays.copyOf(buf, i);
+					return;
 				}
 
 				// Determine high or low by duty cycle
@@ -206,7 +217,11 @@ public class Note {
 						}
 					} else {
 						if(currVolume > 0) {
-							--currVolume;
+							if(--currVolume == 0) {
+								// Reduce space of the buffer if zero volume
+								buf = Arrays.copyOf(buf, i);
+								return;
+							}
 						}
 					}
 				}
@@ -223,8 +238,12 @@ public class Note {
 				// Determine sample amplitude by volume
 				byte amplitude = (byte) (127 * PLAYER_VOLUME * currVolume / 15);
 				if(hasCutoff && i / 48000.0 > (64 - cutoffValue) / 256.0) {
-					amplitude = 0;
+					// Reduce space of the buffer if cut off
+					buf = Arrays.copyOf(buf, i);
+					return;
 				}
+				
+				// High or low depending on randomization vector
 				if(high) {
 					buf[i] = amplitude;
 				} else {
